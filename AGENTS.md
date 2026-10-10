@@ -1,0 +1,74 @@
+# Sentis (SAM) Playwright QA: agent rules
+
+Claude (lead, reviewer) and Codex (implementation) turn the SNTS Jira backlog into
+JavaScript Playwright regression tests against staging https://sam.sentis.com/ (there is
+no production yet). These rules bind both agents.
+
+## Sources of truth
+
+1. **Jira project SNTS**: the issue, its later comments and linked issues. Later comments override the description.
+2. **Confluence QA space**: Requirements (page 133201928), Sentis - Test Suite (131498118),
+   Issue list / Test Cases coverage (331644931).
+3. Figma, Drive and videos linked from tickets as supporting evidence only. Never invent their contents.
+
+A backlog issue is not proof that the defect still reproduces or has been fixed. Test the
+corrected expected behavior; if the defect is present the test fails, and that failure is documented, not hidden.
+
+## Work queue and tracking
+
+- `docs/automation/backlog-inventory.json`: one entry per analyzed SNTS issue (classification A–G, decision, blockers).
+- `docs/automation/coverage-matrix.csv`: Jira ID, area, classification, decision, test file,
+  test ID, execution status, review status, commit, evidence, notes, owner.
+- `docs/automation/requirements-gaps.md`: open questions for the QA owner.
+- Work only on rows whose `owner` is you. Edit only your own rows so branches merge cleanly.
+- Execution status values: `not-run`, `passed`, `failed-defect`, `failed-test`, `blocked`, `skipped`.
+  Never record `passed` without a run.
+
+## Tests
+
+- One `test()` per Jira issue scenario. The title starts with the key: `'SNTS-123: saving a profile keeps the new name'`.
+- One spec per functional area: `tests/<area>.spec.js`. Expected copy lives in `tests/fixtures/<area>.json`.
+- Shared helpers live in `tests/support/`. Do not edit them in an issue branch; propose changes in a separate small branch.
+- Signed-in tests call `asRole(test, '<role>')` from `tests/support/roles.js`. It skips with
+  the missing env var named when the role's session is not available.
+- Selectors: `getByRole` / `getByLabel` with an accessible name, `getByText` with `exact: true`,
+  existing test IDs. No CSS classes, nth-child or XPath. Scope to a dialog or region when names repeat.
+- Assert after every meaningful action. No fixed sleeps (`waitForTimeout`). Comments only for non-obvious behavior.
+- A missing prerequisite becomes `test.skip(condition, 'reason naming the env var or fixture')`.
+  Never fake data by editing the DOM or mocking the app's own API.
+- Assert no more strictly than the issue and requirements state. AI-generated text (class F)
+  gets contract and workflow assertions, never exact wording without an approved spec.
+
+### Known staging behavior
+
+- `/` shows the sign-in form ("Welcome to Sentis Applied Minds"). Client users sign in there.
+- Super-admins sign in through the header's "Super Admin" button, a "Sentis Super Admin"
+  dialog whose inputs are named only by placeholder (no labels).
+
+## Accounts and data safety
+
+- Roles: `super-admin`, `client-admin`. More roles are added by the QA owner as tests need them.
+- Credentials come only from env vars (`SENTIS_<ROLE>_EMAIL` / `_PASSWORD`, see `.env.example`).
+  Never write emails or passwords into source, docs, logs or prompts.
+- Staging holds shared data. Tests that create data use a recognizable `QA-auto-<agent>-<timestamp>`
+  name and clean up in `finally`. No destructive admin actions, real invitations or
+  outbound email to real users without the QA owner's explicit approval for that test.
+- Super-admin tests must not change cross-company settings unless approved.
+
+## Git
+
+- Each agent works in its own worktree: `../Sentis-worktrees/<agent>` on `<agent>/<slug>`, e.g. `codex/snts-123-profile-save`.
+- Commit to your branch only. Never commit to `main`, push, or force-push. The QA owner merges.
+- Never commit `.env`, `.auth/`, `test-results/`, `playwright-report/`.
+
+## Jira and Confluence
+
+Read-only for agents. Any write (comment, transition, new issue, edit, page change) needs the
+QA owner's explicit "yes" for that exact content. Earlier approvals do not carry over.
+
+## Definition of done for an issue
+
+1. The issue and its requirements were read; existing coverage checked.
+2. The test asserts the corrected expected behavior with stable selectors.
+3. `npx playwright test tests/<area>.spec.js --workers=1` was run and the result is recorded in the coverage matrix with evidence.
+4. Claude reviewed the diff and set review status `approved`.
