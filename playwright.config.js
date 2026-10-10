@@ -24,22 +24,27 @@ module.exports = defineConfig({
   ],
   use: {
     baseURL: 'https://sam.sentis.com/',
-    trace: 'retain-on-failure',
+    trace: 'off',
     screenshot: 'only-on-failure',
   },
   projects: [
     // Signs each configured role in once and saves its session under .auth/.
-    { name: 'setup', testMatch: /auth\.setup\.js$/ },
+    { name: 'setup', testMatch: /auth\.setup\.js$/, use: { trace: 'off', screenshot: 'off' } },
     {
       name: 'public',
       grep: /@public/,
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], trace: 'retain-on-failure' },
     },
     {
       name: 'chromium',
       grepInvert: /@public/,
       dependencies: ['setup'],
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], trace: 'off' },
     },
+    ...(process.env.SENTIS_WEBKIT === '1' ? [{
+      name: 'public-webkit',
+      grep: /@public/,
+      use: { ...devices['iPhone 15 Pro Max'], trace: 'off' },
+    }] : []),
   ],
 });

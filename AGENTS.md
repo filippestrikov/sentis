@@ -28,7 +28,7 @@ corrected expected behavior; if the defect is present the test fails, and that f
 
 - Tag tests that need no session with `{ tag: '@public' }`; the `public` project runs them without login setup.
 - Failed/timed-out test evidence is preserved in `Sentis-evidence` beside the main repo (override with `SENTIS_EVIDENCE_DIR`). Screenshots and masked summaries are preserved; traces and videos are preserved only for `public`. Nothing from `setup` or `.auth/` is copied.
-- Mobile tests use Chromium device emulation and do not represent iOS Safari. WebKit is a possible later project and is not used yet.
+- Mobile tests use Chromium device emulation and do not represent iOS Safari. Opt-in `public-webkit` runs only with `SENTIS_WEBKIT=1`. WebKit emulation is closer to Safari's engine but is still not a real iPhone. Authenticated projects do not use WebKit yet.
 - One `test()` per Jira issue scenario. The title starts with the key: `'SNTS-123: saving a profile keeps the new name'`.
 - One spec per functional area: `tests/<area>.spec.js`. Expected copy lives in `tests/fixtures/<area>.json`.
 - Shared helpers live in `tests/support/`. Do not edit them in an issue branch; propose changes in a separate small branch.
@@ -57,6 +57,12 @@ corrected expected behavior; if the defect is present the test fails, and that f
   name and clean up in `finally`. No destructive admin actions, real invitations or
   outbound email to real users without the QA owner's explicit approval for that test.
 - Super-admin tests must not change cross-company settings unless approved.
+- The super-admin account belongs to a real person and is shared. Tests that change UI-level context (selected organization, filters stored per user, theme) must restore it in `finally` and assert the restore (see `tests/super-admin-sam-ai.spec.js`).
+- Tests must not change passwords, profiles or notification preferences on shared accounts.
+
+### Sensitive data
+
+Never share `playwright-report/` or `test-results/` from signed-in runs without checking them for sensitive data. Traces are retained only for `public`; `setup` disables screenshots as well. Evidence folders follow the reporter's rule: masked summaries and screenshots, traces/videos only for `public`, and nothing from `setup` or `.auth/`.
 
 ## Git
 
