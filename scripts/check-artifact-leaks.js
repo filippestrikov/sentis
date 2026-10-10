@@ -79,7 +79,8 @@ function scan(locations, needles, report = console.log) {
   function visit(file, optional = false) {
     try {
       const stat = fs.statSync(file);
-      const real = fs.realpathSync(file);
+      // Native resolution avoids lstat on inaccessible Windows ancestors of readable temp folders.
+      const real = fs.realpathSync.native(file);
       if (visited.has(real)) return;
       visited.add(real);
       if (stat.isDirectory()) {

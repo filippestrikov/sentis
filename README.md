@@ -25,10 +25,26 @@ SENTIS_WEBKIT=1 npx playwright test --project=public-webkit --workers=1 # opt-in
 
 Roles without credentials are skipped, and so are the tests that need them.
 
-Failure screenshots and masked summaries are preserved under `E:\Codex\Sentis-evidence`
+Failure evidence and masked summaries are preserved under `E:\Codex\Sentis-evidence`
 in this checkout layout (`<YYYY-MM-DD>/<case id>/<HHMMSS>-<project>/`, UTC). The default
 is beside the main repo, including when running from an agent worktree; set
 `SENTIS_EVIDENCE_DIR` to override it (relative paths resolve from the repo root).
+Each failure reserves a distinct timestamp folder, including retries in the same second.
+The authenticated `chromium` project disables automatic screenshots. Authenticated images
+are retained only for case IDs in `tests/support/evidence-policy.js` reviewed by Claude
+on 2026-10-10, and only with attachment names beginning `reviewed:`. Automatic
+`screenshot` attachments are withheld. Summaries count withheld images without their content.
+Public images are retained as before. JSON attachments beginning `evidence:` retain only
+allowlisted geometry/control fields, bounded arrays of objects and safe scalar values;
+summaries record dropped counts. Other JSON attachments are discarded. Names containing
+`geometry` produce `geometry.json`; collisions receive numeric suffixes.
+Run `npm run security:evidence-check` for the offline synthetic privacy gate, including
+pure sanitizer checks, image gating, JSON filtering, ZIP-aware marker scanning and folder
+collisions. Its fixtures live outside the main test directory and use no real credentials
+or auth files. The test-only screenshot allowlist is enabled only by
+`SENTIS_EVIDENCE_POLICY_TEST=1`; never set it for staging runs.
+Text scanning cannot detect personal data rendered as pixels; images are controlled by
+the reviewed-screenshot allowlist, not by scanning.
 Only the `public` project's traces and videos are preserved. The `setup` project
 and `.auth/` are never copied. A command-line `--reporter` replaces the configured
 reporters; the config rejects overrides unless the mask reporter is first. For example,

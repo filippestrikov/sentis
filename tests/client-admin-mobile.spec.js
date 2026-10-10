@@ -17,7 +17,8 @@ async function viewportBounds(page, locator) {
 }
 
 async function preserveFailure(page, testInfo) {
-  await testInfo.attach('Mobile failure before context restoration', {
+  await testInfo.attach(testInfo.title.startsWith('SNTS-176:')
+    ? 'reviewed: Mobile failure before context restoration' : 'Mobile failure before context restoration', {
     body: await page.screenshot(), contentType: 'image/png',
   });
 }
@@ -197,14 +198,14 @@ test.describe('Client Admin on mobile Chromium', () => {
               'Invite Tenant User: ' + accessibleName + ' horizontal bounds').toBe(true);
             }
           }
-          if (testInfo.errors.length > errorsBefore) await screenshot('Invite Tenant User layout failure');
+          if (testInfo.errors.length > errorsBefore) await screenshot('reviewed: Invite Tenant User layout failure');
         } finally {
           if (await dialog.isVisible()) await page.keyboard.press('Escape');
           await expect(dialog).toBeHidden();
         }
       }
     } catch (error) {
-      if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) await screenshot('Inspect Users failure');
+      if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) await screenshot('reviewed: Inspect Users failure');
       throw error;
     } finally {
       try {

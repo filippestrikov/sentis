@@ -54,7 +54,7 @@ module.exports = defineConfig({
       name: 'chromium',
       grepInvert: /@public/,
       dependencies: ['setup'],
-      use: { ...devices['Desktop Chrome'], trace: 'off' },
+      use: { ...devices['Desktop Chrome'], trace: 'off', screenshot: 'off' },
     },
     ...(process.env.SENTIS_WEBKIT === '1' ? [{
       name: 'public-webkit',

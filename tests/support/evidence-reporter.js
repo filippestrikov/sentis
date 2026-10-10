@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { reviewedScreenshotCases, sanitizeStructured } = require('./evidence-policy');
 
 class EvidenceReporter {
   constructor() {
@@ -65,13 +66,43 @@ class EvidenceReporter {
       this.folders.push(folder);
 
       const copied = [];
+      const structured = [];
+      let withheldImages = 0;
+      const maskedSecrets = Object.entries(process.env)
+        .filter(([name, value]) => /EMAIL|PASSWORD|TOKEN/i.test(name) && value)
+        .map(([, value]) => value);
       for (const [index, attachment] of result.attachments.entries()) {
         const screenshot = attachment.contentType?.startsWith('image/');
         const trace = attachment.name === 'trace';
         const video = attachment.contentType?.startsWith('video/');
-        if (!screenshot && !(project === 'public' && (trace || video))) continue;
         if (attachment.path && path.resolve(attachment.path).split(path.sep)
           .some(part => part.toLowerCase() === '.auth')) continue;
+        if (attachment.contentType === 'application/json' && attachment.name.startsWith('evidence:')) {
+          try {
+            const raw = attachment.path ? fs.readFileSync(attachment.path) : attachment.body;
+            if (!raw) continue;
+            const { data, dropped } = sanitizeStructured(JSON.parse(raw.toString('utf8')), maskedSecrets);
+            const name = attachment.name.slice('evidence:'.length);
+            const slug = /geometry/i.test(name) ? 'geometry'
+              : this.mask(name).toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'evidence';
+            let filename = `${slug}.json`;
+            let collision = 0;
+            while (copied.includes(filename)) filename = `${slug}-${++collision}.json`;
+            fs.writeFileSync(path.join(folder, filename), JSON.stringify(data, null, 2));
+            copied.push(filename);
+            structured.push({ file: filename, dropped });
+          } catch {
+            // Parser errors can contain raw JSON; record only a content-free failure count.
+            structured.push({ dropped: 1, status: 'invalid structured evidence' });
+          }
+          continue;
+        }
+        if (screenshot && project !== 'public' && (attachment.name === 'screenshot'
+          || !reviewedScreenshotCases.has(caseId) || !attachment.name.startsWith('reviewed:'))) {
+          withheldImages++;
+          continue;
+        }
+        if (!screenshot && !(project === 'public' && (trace || video))) continue;
         try {
           const extension = attachment.path ? path.extname(attachment.path)
             : screenshot ? '.png' : video ? '.webm' : '.zip';
@@ -100,6 +131,8 @@ class EvidenceReporter {
           file: this.mask(location.file), line: location.line, column: location.column,
         } : null,
         attachments: copied,
+        structured,
+        withheldImages: { count: withheldImages, reason: 'withheld by privacy policy' },
         trace: project === 'public'
           ? (copied.includes('trace.zip') ? 'trace.zip' : 'not attached')
           : 'not preserved: authenticated session',

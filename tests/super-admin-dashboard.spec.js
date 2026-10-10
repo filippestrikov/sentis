@@ -62,7 +62,7 @@ test.describe('Super Admin dashboard', () => {
       await page.keyboard.press('Escape');
       await expect(picker).toHaveCount(0);
     } catch (error) {
-      await testInfo.attach('Custom range before context restoration', {
+      await testInfo.attach('reviewed: Custom range before context restoration', {
         body: await maskedScreenshot(page), contentType: 'image/png',
       });
       throw error;
