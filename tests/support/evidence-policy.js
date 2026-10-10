@@ -13,10 +13,11 @@ const reviewedScreenshotCases = new Set([
 
 if (process.env.SENTIS_EVIDENCE_POLICY_TEST === '1') {
   for (const id of (process.env.SENTIS_EVIDENCE_POLICY_TEST_CASES || '').split(',')) {
-    if (/^SNTS-\d+$/.test(id)) reviewedScreenshotCases.add(id);
+    if (/^SNTS-9\d{3}$/.test(id)) reviewedScreenshotCases.add(id);
   }
 }
 
+// String values are bounded and filtered for "@" and secrets, but heading text could still be a person's name; tests must label by section heading only.
 const structuredFields = new Set([
   'tab', 'section', 'label', 'control', 'selector', 'expected', 'actual', 'boundary',
   'withinViewport', 'elementWidth', 'elementHeight', 'clipContainerWidth', 'cutPx',

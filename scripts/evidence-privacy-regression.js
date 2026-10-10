@@ -20,6 +20,21 @@ function filesAt(folder) {
 }
 
 function main() {
+  check('test override accepts synthetic IDs only', () => {
+    const run = spawnSync(process.execPath, ['-e', `
+      const assert = require('assert');
+      const { reviewedScreenshotCases } = require('./tests/support/evidence-policy');
+      assert(!reviewedScreenshotCases.has('SNTS-221'));
+      assert(reviewedScreenshotCases.has('SNTS-9002'));
+    `], {
+      cwd: root,
+      env: { ...process.env, SENTIS_EVIDENCE_POLICY_TEST: '1',
+        SENTIS_EVIDENCE_POLICY_TEST_CASES: 'SNTS-221,SNTS-9002' },
+      encoding: 'utf8',
+    });
+    assert.strictEqual(run.status, 0);
+  });
+
   check('pure structured sanitizer boundaries', () => {
     const { sanitizeStructured } = require('../tests/support/evidence-policy');
     const input = [{ width: 430, label: 'safe', email: 'private', actual: Infinity,

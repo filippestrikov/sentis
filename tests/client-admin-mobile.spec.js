@@ -205,7 +205,7 @@ test.describe('Client Admin on mobile Chromium', () => {
         }
       }
     } catch (error) {
-      if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) await screenshot('reviewed: Inspect Users failure');
+      if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) await screenshot('Inspect Users failure');
       throw error;
     } finally {
       try {
