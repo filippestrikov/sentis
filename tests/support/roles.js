@@ -18,11 +18,15 @@ function credentials(role) {
 const storageStatePath = (role) => path.join(__dirname, '..', '..', '.auth', `${role}.json`);
 
 // Use inside a spec or describe: asRole(test, 'client-admin').
+// The session file is written by the setup project during the same run, so check for it
+// when each test starts, not when the file is loaded.
 function asRole(test, role) {
   const fs = require('fs');
   const state = storageStatePath(role);
-  test.skip(!fs.existsSync(state), `No ${role} session; set ${credentials(role).missing} and run the setup project`);
-  test.use({ storageState: state });
+  test.use({ storageState: async ({}, use) => use(fs.existsSync(state) ? state : undefined) });
+  test.beforeEach(() => {
+    test.skip(!fs.existsSync(state), `No ${role} session; set ${credentials(role).missing} and run the setup project`);
+  });
 }
 
 module.exports = { roles, credentials, storageStatePath, asRole };
