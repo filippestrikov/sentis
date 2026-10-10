@@ -154,12 +154,15 @@ async function horizontalOverflow(page) {
       return 'Sentis Super Admin Dashboard';
     };
     const candidates = [];
+    const geometry = new Map();
     for (const element of document.body.querySelectorAll('*')) {
       if (element === excluded || excluded.contains(element) || element.closest('svg')) continue;
       const box = element.getBoundingClientRect();
       const style = getComputedStyle(element);
       if (!box.width || !box.height || style.visibility === 'hidden' || style.display === 'none') continue;
       let overflow = box.right > innerWidth + 1;
+      let clipContainerWidth = innerWidth;
+      let cutPx = box.right - innerWidth;
       for (let parent = element.parentElement; parent; parent = parent.parentElement) {
         if (box.right <= parent.getBoundingClientRect().right + 1) continue;
         const overflowX = getComputedStyle(parent).overflowX;
@@ -169,14 +172,21 @@ async function horizontalOverflow(page) {
         }
         if (['hidden', 'clip'].includes(overflowX)) {
           overflow = true;
+          const clipBox = parent.getBoundingClientRect();
+          clipContainerWidth = clipBox.width;
+          cutPx = box.right - clipBox.right;
           break;
         }
       }
-      if (overflow) candidates.push(element);
+      if (overflow) {
+        candidates.push(element);
+        geometry.set(element, { elementWidth: box.width, clipContainerWidth, cutPx, viewportWidth: innerWidth });
+      }
     }
     const outermost = candidates.filter(element => !candidates.some(other => other !== element && other.contains(element)));
     return {
       sections: [...new Set(outermost.map(label))],
+      elements: outermost.map(element => ({ section: label(element), ...geometry.get(element) })),
       documentOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
     };
   });
@@ -189,20 +199,15 @@ test.describe('Super Admin sections on mobile Chromium', () => {
   test('SNTS-204: SAM AI sections fit the mobile screen without horizontal overflow', async ({ page }, testInfo) => {
     test.setTimeout(180000); // Eight sections load shared staging dashboard data sequentially.
     let initialOrganization;
-    const screenshot = async section => {
+    let currentTab = 'SAM AI';
+    const attachGeometry = async (tab, overflow) => {
       try {
-        await testInfo.attach(section + ' mobile overflow failure', {
-          body: await page.screenshot({ mask: [
-            page.getByRole('table', { includeHidden: true }),
-            // Super-admin account cards list users outside a table on Manage.
-            page.getByRole('generic').filter({
-              has: page.getByRole('heading', { name: 'Super Admin Accounts', exact: true }),
-            }).filter({ has: page.getByRole('button', { name: 'Add Super Admin', exact: true }) }).last(),
-          ] }),
-          contentType: 'image/png',
+        await testInfo.attach(tab + ' mobile overflow geometry', {
+          body: JSON.stringify(overflow.elements.map(element => ({ tab, ...element })), null, 2),
+          contentType: 'application/json',
         });
       } catch {
-        testInfo.annotations.push({ type: 'evidence', description: section + ': masked viewport screenshot unavailable' });
+        testInfo.annotations.push({ type: 'evidence', description: tab + ': geometry JSON unavailable' });
       }
     };
     try {
@@ -251,7 +256,7 @@ test.describe('Super Admin sections on mobile Chromium', () => {
         expect.soft(overflow.sections, section + ': horizontal overflow in sections: ' + (overflow.sections.join(', ') || 'none')).toEqual([]);
         expect.soft(overflow.documentOverflow, section + ': document horizontal overflow').toBe(false);
         if (overflow.sections.length || overflow.documentOverflow) {
-          await screenshot(section);
+          await attachGeometry(section, overflow);
         }
       };
       await check('SAM AI');
@@ -264,6 +269,7 @@ test.describe('Super Admin sections on mobile Chromium', () => {
         ['User Details', 'user-details', /^User Search & Module Details$/],
         ['Audit Logs', 'audit-logs', /^Audit Logs - /],
       ]) {
+        currentTab = name;
         await navigation.getByRole('button', { name, exact: true }).click();
         await expect(page).toHaveURL(new RegExp('[?&]tab=' + tab + '(?:&|$)'));
         await expect(page.getByRole('heading', { name: heading })).toBeVisible();
@@ -272,7 +278,13 @@ test.describe('Super Admin sections on mobile Chromium', () => {
         await check(name);
       }
     } catch (error) {
-      if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) await screenshot('Sentis Super Admin Dashboard');
+      if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) {
+        try {
+          await attachGeometry(currentTab, await horizontalOverflow(page));
+        } catch {
+          testInfo.annotations.push({ type: 'evidence', description: currentTab + ': geometry JSON unavailable' });
+        }
+      }
       throw error;
     } finally {
       try {
