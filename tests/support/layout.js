@@ -1,5 +1,20 @@
 const { expect } = require('@playwright/test');
 
+async function textBox(locator) {
+  // Measure rendered text, not the element box: block headings span the full width
+  return locator.evaluate(el => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const rects = [...range.getClientRects()].filter(rect => rect.width > 0 && rect.height > 0);
+    if (!rects.length) return null;
+    const x = Math.min(...rects.map(rect => rect.left));
+    const y = Math.min(...rects.map(rect => rect.top));
+    const right = Math.max(...rects.map(rect => rect.right));
+    const bottom = Math.max(...rects.map(rect => rect.bottom));
+    return { x, y, width: right - x, height: bottom - y };
+  });
+}
+
 async function expectDialogLayout(page, dialog, { heading, label }) {
   await dialog.evaluate(element => Promise.all(element.getAnimations({ subtree: true })
     .map(animation => animation.finished.catch(() => {}))));
@@ -25,11 +40,13 @@ async function expectDialogLayout(page, dialog, { heading, label }) {
   await expect.soft(close, `${label}: Close button is visible`).toBeVisible();
   const closeBox = await close.boundingBox();
   expect.soft(closeBox, `${label}: Close button has a measurable box`).not.toBeNull();
-  if (headingBox && closeBox) {
-    const intersects = closeBox.x < headingBox.x + headingBox.width
-      && closeBox.x + closeBox.width > headingBox.x
-      && closeBox.y < headingBox.y + headingBox.height
-      && closeBox.y + closeBox.height > headingBox.y;
+  const headingTextBox = await textBox(heading);
+  expect.soft(headingTextBox, `${label}: heading has measurable text`).not.toBeNull();
+  if (headingTextBox && closeBox) {
+    const intersects = closeBox.x < headingTextBox.x + headingTextBox.width
+      && closeBox.x + closeBox.width > headingTextBox.x
+      && closeBox.y < headingTextBox.y + headingTextBox.height
+      && closeBox.y + closeBox.height > headingTextBox.y;
     expect.soft(intersects, `${label}: Close button does not overlap heading`).toBe(false);
   }
 
@@ -42,4 +59,4 @@ async function expectDialogLayout(page, dialog, { heading, label }) {
   }
 }
 
-module.exports = { expectDialogLayout };
+module.exports = { expectDialogLayout, textBox };

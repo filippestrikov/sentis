@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const { asRole } = require('./support/roles');
-const { expectDialogLayout } = require('./support/layout');
+const { expectDialogLayout, textBox } = require('./support/layout');
 
 test.describe('Client Admin invite dialog layout', () => {
   asRole(test, 'client-admin');
@@ -32,7 +32,7 @@ test.describe('Client Admin invite dialog layout', () => {
           // The introductory subheading includes the selected organization's name.
           const subheading = dialog.getByRole('paragraph').filter({ hasText: /^Invite a user into / });
           await expect.soft(subheading, `${label}: invite subheading is visible`).toBeVisible();
-          const subheadingBox = await subheading.boundingBox();
+          const subheadingBox = await textBox(subheading);
           const closeBox = await dialog.getByRole('button', { name: 'Close', exact: true }).boundingBox();
           expect.soft(subheadingBox, `${label}: subheading has a measurable box`).not.toBeNull();
           expect.soft(closeBox, `${label}: Close has a measurable box`).not.toBeNull();
