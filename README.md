@@ -19,6 +19,8 @@ npx playwright test --project=public        # public tests only; no login setup
 npx playwright test tests/<area>.spec.js --workers=1
 npx playwright test --list                  # discovery only
 npx playwright show-report
+npx playwright install webkit
+SENTIS_WEBKIT=1 npx playwright test --project=public-webkit --workers=1 # opt-in public WebKit (PowerShell: set $env:SENTIS_WEBKIT='1' first)
 ```
 
 Roles without credentials are skipped, and so are the tests that need them.
