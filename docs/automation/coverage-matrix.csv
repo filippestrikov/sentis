@@ -23,7 +23,7 @@ SNTS-148,Medium,Request Organization Access,A,blocked,no-org-user,no,,,not-run,,
 SNTS-149,Low,Request Organization Access,A,blocked,no-org-user,no,,,not-run,,,,,Needs no-org account; destination not specified
 SNTS-150,Medium,Account / Security,B,blocked,disposable-user,yes,,,not-run,,,,,Password form on a shared account is unsafe; needs a disposable account
 SNTS-151,High,Account / Security,A,blocked,disposable-user,yes,,,not-run,,,,,Changes the password; needs a disposable account
-SNTS-156,Low,Super Admin Login / Mobile,C,pilot,anonymous,no,,,not-run,pending,,,codex,Public; mobile viewport layout of Super Admin dialog
+SNTS-156,Low,Super Admin Login / Mobile,C,pilot,anonymous,no,tests/super-admin-login.spec.js,SNTS-156: Super Admin login popup fits and is aligned on mobile,failed-defect,pending,,playwright-report/index.html; test-results/super-admin-login-SNTS-156-f0032-ts-and-is-aligned-on-mobile-chromium/trace.zip; test-results/super-admin-login-SNTS-156-f0032-ts-and-is-aligned-on-mobile-chromium/test-failed-1.png,codex,2026-10-10: Chromium iPhone 15 Pro Max emulation (not Safari on iOS); 1 failed public test and 2 skipped auth setup tests; screenshot inspected and confirms Close overlaps heading (product defect SNTS-156); viewport and all per-control visibility/containment checks passed; no credentials entered; Claude review pending
 SNTS-157,Medium,Homepage / Pre-start Rating,A,blocked,user-without-reservation,no,,,not-run,,,,,Needs an account with no pre-start reservation
 SNTS-159,Medium,Homepage / Pre-start Rating,A,blocked,tbd,yes,,,not-run,,,,,Needs a rated reservation; changes rating
 SNTS-161,Medium,Homepage / Sidebar / Mobile,D,ready,client-admin,no,,,not-run,,,,,Mobile dark theme; contrast via computed colors
