@@ -11,7 +11,7 @@ SNTS-121,Medium,Safety Shares,A,needs-clarification,tbd,no,,,not-run,,,,,Role an
 SNTS-131,Low,Super Admin / AI Configuration,A,needs-clarification,super-admin,yes,,,not-run,,,,,Which actions change the counter is not defined
 SNTS-136,Medium,Super Admin / Recent Observations,A,ready,super-admin,no,,,not-run,,,,,Needs more than one page of Recent Observations; skip if a single page
 SNTS-138,Medium,Super Admin Dashboard,A,ready,super-admin,no,,,not-run,,,,,Read-only filter; data assertion depends on known records in range
-SNTS-139,High,Account / Role Access,A,pilot,super-admin+client-admin,no,,,not-run,pending,,,codex,Two scenarios: super-admin login and no Super Admin tab for client admin
+SNTS-139,High,Account / Role Access,A,pilot,super-admin+client-admin,no,,,blocked,not-started,,,codex,"Pilot blocked 2026-10-10: no .env on the workstation (needs SENTIS_SUPER_ADMIN_* and SENTIS_CLIENT_ADMIN_*). Not implemented, because selectors and screens need a signed-in session to verify"
 SNTS-140,Low,Admin Dashboard / Invite User,C,ready,client-admin,no,,,not-run,,,,,Bounding-box overlap check; do not send the invite
 SNTS-141,Low,Pre-start Observation / Responsive UI,C,needs-clarification,tbd,no,,,not-run,,,,,Affected device and which icons are missing not specified
 SNTS-142,High,Super Admin / Approved Domains,B,needs-clarification,super-admin,yes,,,not-run,,,,,Jira comment: adding domains sends emails (twice). Needs approval and cleanup plan before automating
@@ -64,7 +64,7 @@ SNTS-201,Low,Super Admin Dashboard / Mobile,C,manual-only,super-admin,no,,,not-r
 SNTS-203,Low,Super Admin / SAM AI / Mobile,D,ready,super-admin,no,,,not-run,,,,,Chart date label contrast in dark theme
 SNTS-204,Low,Super Admin / SAM AI / Mobile,C,ready,super-admin,no,,,not-run,,,,,Recent AI section within viewport
 SNTS-205,Low,Super Admin / Training / Mobile,C,ready,super-admin,no,,,not-run,,,,,New training module popup fits viewport; do not save
-SNTS-206,Medium,Super Admin / Training,D,pilot,super-admin,no,,,not-run,pending,,,codex,Open New Training Module on mobile and count Duration limits placeholders; do not save
+SNTS-206,Medium,Super Admin / Training,D,pilot,super-admin,no,,,blocked,not-started,,,codex,"Pilot blocked 2026-10-10: no .env on the workstation (needs SENTIS_SUPER_ADMIN_*). Not implemented, because selectors and screens need a signed-in session to verify"
 SNTS-207,Low,Super Admin / Training,B,needs-clarification,super-admin,yes,,,not-run,,,,,Valid range not documented; saving mutates
 SNTS-208,High,Super Admin / Training,A,blocked,super-admin,yes,,,not-run,,,,,Edits a training module; needs a disposable module
 SNTS-209,Low,Super Admin / Training / Mobile,C,ready,super-admin,no,,,not-run,,,,,Edit popup layout; do not save
@@ -94,7 +94,7 @@ SNTS-237,High,Client Admin / Invite Management,E,needs-clarification,client-admi
 SNTS-239,Medium,Super Admin / Suggested Questions,A,needs-clarification,super-admin,yes,,,not-run,,,,,"Feature request, not a defect"
 SNTS-240,Medium,Super Admin / Module Access,A,blocked,super-admin,yes,,,not-run,,,,,Changes module access for an organization; needs a test org
 SNTS-241,Medium,Team User / Lessons,A,blocked,team-user,yes,,,not-run,,,,,Needs Team User role
-SNTS-242,Medium,Team User / New Observation,A,pilot,team-user,no,,,not-run,pending,,,codex,"Ticket names Team User; pilot uses client admin only if New Observation is reachable, else blocked on team-user"
+SNTS-242,Medium,Team User / New Observation,A,pilot,team-user,no,,,blocked,not-started,,,codex,"Pilot blocked 2026-10-10: no .env on the workstation (needs SENTIS_CLIENT_ADMIN_* to check access, else SENTIS_TEAM_USER_*). Not implemented, because selectors and screens need a signed-in session to verify"
 SNTS-243,Low,Leader User / Permissions,A,blocked,leader-user,no,,,not-run,,,,,Needs Leader role
 SNTS-244,Medium,Super Admin / Invitations,E,blocked,super-admin,yes,,,not-run,,,,,Sends a real invitation email
 SNTS-245,High,Training / Lesson 1,A,needs-clarification,tbd,no,,,not-run,,,,,Approved copy must come from the ticket attachment
@@ -108,4 +108,4 @@ SNTS-261,High,Email Verification,E,blocked,new-registration,yes,,,not-run,,,,,Em
 SNTS-262,Medium,Registration / Whitelisted Domains,E,blocked,new-registration,yes,,,not-run,,,,,Whitelisted domain registration
 SNTS-263,Medium,User Workspace / Branding,A,needs-clarification,tbd,no,,,not-run,,,,,Which organization and expected tenant name
 SNTS-264,Medium,Registration / Approved Domains,E,blocked,new-registration,yes,,,not-run,,,,,Approved domain registration
-SNTS-265,Medium,Super Admin / SAM AI,A,pilot,super-admin,no,,,not-run,pending,,,codex,Switch organizations in SAM AI; no page errors and the view reloads
+SNTS-265,Medium,Super Admin / SAM AI,A,pilot,super-admin,no,,,blocked,not-started,,,codex,"Pilot blocked 2026-10-10: no .env on the workstation (needs SENTIS_SUPER_ADMIN_*). Not implemented, because selectors and screens need a signed-in session to verify"
