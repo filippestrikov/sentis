@@ -26,6 +26,9 @@ corrected expected behavior; if the defect is present the test fails, and that f
 
 ## Tests
 
+- Tag tests that need no session with `{ tag: '@public' }`; the `public` project runs them without login setup.
+- Failed/timed-out test evidence is preserved in `Sentis-evidence` beside the main repo (override with `SENTIS_EVIDENCE_DIR`). Screenshots and masked summaries are preserved; traces and videos are preserved only for `public`. Nothing from `setup` or `.auth/` is copied.
+- Mobile tests use Chromium device emulation and do not represent iOS Safari. WebKit is a possible later project and is not used yet.
 - One `test()` per Jira issue scenario. The title starts with the key: `'SNTS-123: saving a profile keeps the new name'`.
 - One spec per functional area: `tests/<area>.spec.js`. Expected copy lives in `tests/fixtures/<area>.json`.
 - Shared helpers live in `tests/support/`. Do not edit them in an issue branch; propose changes in a separate small branch.

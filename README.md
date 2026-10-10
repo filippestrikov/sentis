@@ -15,12 +15,20 @@ cp .env.example .env   # fill in role credentials; .env is gitignored
 
 ```sh
 npx playwright test                         # all tests; the setup project signs roles in first
+npx playwright test --project=public        # public tests only; no login setup
 npx playwright test tests/<area>.spec.js --workers=1
 npx playwright test --list                  # discovery only
 npx playwright show-report
 ```
 
 Roles without credentials are skipped, and so are the tests that need them.
+
+Failure screenshots and masked summaries are preserved under `E:\Codex\Sentis-evidence`
+in this checkout layout (`<YYYY-MM-DD>/<case id>/<HHMMSS>-<project>/`). The default
+is beside the main repo, including when running from an agent worktree; set
+`SENTIS_EVIDENCE_DIR` to override it (relative paths resolve from the repo root).
+Only the `public` project's traces and videos are preserved. The `setup` project
+and `.auth/` are never copied.
 
 ## Tracking
 
