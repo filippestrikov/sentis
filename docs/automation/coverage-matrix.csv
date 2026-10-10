@@ -1,0 +1,111 @@
+jira_id,priority,functional_area,classification,automation_decision,role,mutates_data,test_file,test_id,execution_status,review_status,commit,evidence,owner,notes
+SNTS-66,Medium,Resource Guide,C,needs-clarification,tbd,no,,,not-run,,,,,Role and navigation path to Resource Guide not stated
+SNTS-79,Medium,Super Admin / Branding,B,ready,super-admin,yes,,,not-run,,,,,"Needs an oversized image fixture; if the defect is present the logo is replaced, so back up and restore the logo. Size limit not documented"
+SNTS-81,Medium,Super Admin / Branding,A,ready,super-admin,yes,,,not-run,,,,,Changes the organization logo; requires backup/restore and a mutation gate
+SNTS-82,Low,Super Admin / Branding,D,needs-clarification,super-admin,yes,,,not-run,,,,,Needs an approved way to compare rendered logo colors (pixel or snapshot baseline)
+SNTS-84,Blocker,Login,A,blocked,affected-account,no,,,not-run,,,,,Specific account in the ticket. Needs QA owner decision and env vars
+SNTS-107,Low,My Observation / Mobile,C,needs-clarification,tbd,no,,,not-run,,,,,Which role sees My Observation; tablet viewport not specified
+SNTS-114,Medium,Admin Dashboard / Guides,E,blocked,client-admin,no,,,not-run,,,,,Needs a second user to generate a guide view
+SNTS-119,Low,Admin Dashboard / Knowledge Uploads,D,needs-clarification,super-admin,no,,,not-run,,,,,Highlighting behavior is subjective without a design reference
+SNTS-121,Medium,Safety Shares,A,needs-clarification,tbd,no,,,not-run,,,,,Role and a Safety Share with a source asset needed
+SNTS-131,Low,Super Admin / AI Configuration,A,needs-clarification,super-admin,yes,,,not-run,,,,,Which actions change the counter is not defined
+SNTS-136,Medium,Super Admin / Recent Observations,A,ready,super-admin,no,,,not-run,,,,,Needs more than one page of Recent Observations; skip if a single page
+SNTS-138,Medium,Super Admin Dashboard,A,ready,super-admin,no,,,not-run,,,,,Read-only filter; data assertion depends on known records in range
+SNTS-139,High,Account / Role Access,A,pilot,super-admin+client-admin,no,,,blocked,not-started,,,codex,"Pilot blocked 2026-10-10: no .env on the workstation (needs SENTIS_SUPER_ADMIN_* and SENTIS_CLIENT_ADMIN_*). Not implemented, because selectors and screens need a signed-in session to verify"
+SNTS-140,Low,Admin Dashboard / Invite User,C,ready,client-admin,no,,,not-run,,,,,Bounding-box overlap check; do not send the invite
+SNTS-141,Low,Pre-start Observation / Responsive UI,C,needs-clarification,tbd,no,,,not-run,,,,,Affected device and which icons are missing not specified
+SNTS-142,High,Super Admin / Approved Domains,B,needs-clarification,super-admin,yes,,,not-run,,,,,Jira comment: adding domains sends emails (twice). Needs approval and cleanup plan before automating
+SNTS-143,Medium,Super Admin / Approved Domains,A,blocked,super-admin,yes,,,not-run,,,,,Adds a real domain and sends emails
+SNTS-144,Low,Registration,A,needs-clarification,anonymous,no,,,not-run,,,,,Logo link destination not specified
+SNTS-146,Medium,Super Admin / User Approval,A,blocked,super-admin,yes,,,not-run,,,,,Needs a pending user fixture; approval is irreversible
+SNTS-147,Low,Super Admin / Organization Access Requests,A,blocked,super-admin,no,,,not-run,,,,,Needs access requests in several statuses
+SNTS-148,Medium,Request Organization Access,A,blocked,no-org-user,no,,,not-run,,,,,Needs an account without organization to reach Request Organization Access
+SNTS-149,Low,Request Organization Access,A,blocked,no-org-user,no,,,not-run,,,,,Needs no-org account; destination not specified
+SNTS-150,Medium,Account / Security,B,blocked,disposable-user,yes,,,not-run,,,,,Password form on a shared account is unsafe; needs a disposable account
+SNTS-151,High,Account / Security,A,blocked,disposable-user,yes,,,not-run,,,,,Changes the password; needs a disposable account
+SNTS-156,Low,Super Admin Login / Mobile,C,pilot,anonymous,no,,,not-run,pending,,,codex,Public; mobile viewport layout of Super Admin dialog
+SNTS-157,Medium,Homepage / Pre-start Rating,A,blocked,user-without-reservation,no,,,not-run,,,,,Needs an account with no pre-start reservation
+SNTS-159,Medium,Homepage / Pre-start Rating,A,blocked,tbd,yes,,,not-run,,,,,Needs a rated reservation; changes rating
+SNTS-161,Medium,Homepage / Sidebar / Mobile,D,ready,client-admin,no,,,not-run,,,,,Mobile dark theme; contrast via computed colors
+SNTS-163,Low,Safety Share / Mobile,C,needs-clarification,tbd,no,,,not-run,,,,,Role for Safety Share not stated; clipping measurable
+SNTS-164,Medium,Safety Share / Mobile,C,manual-only,tbd,no,,,not-run,,,,,Real-device fullscreen only
+SNTS-165,Low,Safety Share / Mobile,D,manual-only,tbd,no,,,not-run,,,,,Visual artifact; no baseline
+SNTS-166,Medium,Safety Share / Mobile,C,needs-clarification,tbd,no,,,not-run,,,,,"Loader ""broken"" not defined"
+SNTS-167,Medium,Pre-start Observation / Mobile,C,needs-clarification,tbd,no,,,not-run,,,,,"Popup named ""Leadership Development Guide"" here but SNTS-242 renames it ""Pre-start Development Guide"""
+SNTS-168,Low,Pre-start Observation / Mobile,D,manual-only,tbd,no,,,not-run,,,,,Visual consistency; no spec
+SNTS-169,Medium,Pre-start Observation / Mobile,B,needs-clarification,client-admin,no,,,not-run,,,,,Supported crew size range not documented
+SNTS-170,Medium,Pre-start Observation / Mobile,C,blocked,client-admin,yes,,,not-run,,,,,Requires submitting an observation (creates data)
+SNTS-171,Medium,Pre-start Observation / Mobile,A,ready,client-admin,no,,,not-run,,,,,Add and remove a file without submitting
+SNTS-172,Low,Pre-start Observation / Mobile,B,needs-clarification,client-admin,no,,,not-run,,,,,Correct warning text and range not documented
+SNTS-173,Low,My Observation / Mobile,C,needs-clarification,tbd,no,,,not-run,,,,,Role for My Observation
+SNTS-175,Medium,Client Admin Dashboard / Mobile,D,needs-clarification,client-admin,no,,,not-run,,,,,Which values are unreadable not specified
+SNTS-176,Medium,Client Admin Dashboard / Mobile,C,ready,client-admin,no,,,not-run,,,,,Mobile custom date range calendar within viewport
+SNTS-177,Low,Client Admin / Pre-start Observation,D,manual-only,client-admin,no,,,not-run,,,,,Visual width; no spec
+SNTS-178,Low,Client Admin / Pre-start Observation,D,manual-only,client-admin,no,,,not-run,,,,,Affordance is subjective
+SNTS-179,Low,Client Admin / Pre-start Observation,D,manual-only,client-admin,no,,,not-run,,,,,Border styling; no spec
+SNTS-180,Medium,Client Admin / Pre-start Observation,C,ready,client-admin,no,,,not-run,,,,,Needs an existing pre-start observation; view only
+SNTS-182,Medium,Client Admin Dashboard / Mobile,C,ready,client-admin,no,,,not-run,,,,,Scroll position after tab switch
+SNTS-183,Low,Client Admin / Inspect Users,C,ready,client-admin,no,,,not-run,,,,,Popup fits viewport; do not send invite
+SNTS-184,Low,Client Admin / Inspect Users,C,needs-clarification,client-admin,no,,,not-run,,,,,Placeholder clipping measurement approach
+SNTS-185,Medium,Lessons / Mobile,A,needs-clarification,tbd,no,,,not-run,,,,,Role with lesson attachments
+SNTS-186,Medium,Lessons / Mobile,A,needs-clarification,tbd,no,,,not-run,,,,,"Improvement, not a defect; needs approved behavior"
+SNTS-187,Low,QR Code Survey,D,blocked,qr-survey,no,,,not-run,,,,,Needs a QR survey URL
+SNTS-189,Medium,QR Code Survey,B,blocked,qr-survey,no,,,not-run,,,,,Needs a QR survey URL
+SNTS-190,Medium,QR Code Survey,A,blocked,qr-survey,yes,,,not-run,,,,,Improvement; needs QR survey and submission
+SNTS-191,Medium,Homepage / Lessons,A,blocked,tbd,yes,,,not-run,,,,,Needs lesson test reruns
+SNTS-192,Medium,Homepage / Lessons,A,blocked,tbd,yes,,,not-run,,,,,Changes user lesson progress
+SNTS-193,Medium,Homepage / QR Code,E,blocked,qr-survey,yes,,,not-run,,,,,Server-side reuse rule; needs QR code
+SNTS-194,Medium,Homepage / Survey Progress,A,blocked,client-admin,yes,,,not-run,,,,,Partial survey progress
+SNTS-195,Low,Client Admin / Rating Diagram,D,needs-clarification,client-admin,no,,,not-run,,,,,Which content is clipped
+SNTS-196,Medium,Client Admin / Guides,E,blocked,client-admin,no,,,not-run,,,,,Needs a second user to download
+SNTS-197,Medium,Homepage / Sidebar / Mobile,C,ready,client-admin,no,,,not-run,,,,,Logout visible in mobile sidebar; do not click
+SNTS-198,Medium,Admin Dashboard / Organization Creation,A,blocked,super-admin,yes,,,not-run,,,,,Creates an organization
+SNTS-201,Low,Super Admin Dashboard / Mobile,C,manual-only,super-admin,no,,,not-run,,,,,Scrollbar rendering
+SNTS-203,Low,Super Admin / SAM AI / Mobile,D,ready,super-admin,no,,,not-run,,,,,Chart date label contrast in dark theme
+SNTS-204,Low,Super Admin / SAM AI / Mobile,C,ready,super-admin,no,,,not-run,,,,,Recent AI section within viewport
+SNTS-205,Low,Super Admin / Training / Mobile,C,ready,super-admin,no,,,not-run,,,,,New training module popup fits viewport; do not save
+SNTS-206,Medium,Super Admin / Training,D,pilot,super-admin,no,,,blocked,not-started,,,codex,"Pilot blocked 2026-10-10: no .env on the workstation (needs SENTIS_SUPER_ADMIN_*). Not implemented, because selectors and screens need a signed-in session to verify"
+SNTS-207,Low,Super Admin / Training,B,needs-clarification,super-admin,yes,,,not-run,,,,,Valid range not documented; saving mutates
+SNTS-208,High,Super Admin / Training,A,blocked,super-admin,yes,,,not-run,,,,,Edits a training module; needs a disposable module
+SNTS-209,Low,Super Admin / Training / Mobile,C,ready,super-admin,no,,,not-run,,,,,Edit popup layout; do not save
+SNTS-210,Low,Super Admin / Guides / Mobile,C,manual-only,super-admin,no,,,not-run,,,,,Virtual keyboard behavior
+SNTS-211,Low,Super Admin / Guides / Mobile,B,needs-clarification,super-admin,yes,,,not-run,,,,,Invalid thumbnail data not defined
+SNTS-212,Medium,Guides,D,blocked,tbd,no,,,not-run,,,,,Needs a guide without video
+SNTS-213,Medium,Guides,A,blocked,super-admin,yes,,,not-run,,,,,Saves thumbnails
+SNTS-214,Low,Super Admin / Guides / Mobile,C,needs-clarification,super-admin,no,,,not-run,,,,,"""Broken"" not specified"
+SNTS-215,Medium,Guides,A,blocked,super-admin,yes,,,not-run,,,,,Uploads a video
+SNTS-216,Low,Guides,D,blocked,tbd,no,,,not-run,,,,,Needs a guide with thumbnail and no video
+SNTS-217,Low,Super Admin / Guides,D,ready,super-admin,no,,,not-run,,,,,Contrast check in the affected theme; do not save
+SNTS-219,Medium,Super Admin / Safety Shares,B,needs-clarification,super-admin,yes,,,not-run,,,,,If the defect is present an invalid Safety Share is saved; needs cleanup approval
+SNTS-220,Medium,Super Admin / Safety Shares,E,blocked,super-admin,yes,,,not-run,,,,,Needs iOS image fixtures (HEIC) and upload
+SNTS-221,Low,Super Admin / PST Reports,D,ready,super-admin,no,,,not-run,,,,,Image loads (naturalWidth > 0)
+SNTS-222,Low,QR Code / Team Engagement Survey,D,manual-only,tbd,no,,,not-run,,,,,Styling
+SNTS-223,Low,QR Code / Team Engagement Survey,D,manual-only,tbd,no,,,not-run,,,,,Typography
+SNTS-224,Low,QR Code / Team Engagement Survey,D,manual-only,tbd,no,,,not-run,,,,,Scrollbar
+SNTS-225,Low,QR Code / Team Engagement Survey,A,blocked,qr-survey,no,,,not-run,,,,,Needs a QR survey URL
+SNTS-226,Low,Homepage / Sync Observation,D,needs-clarification,tbd,no,,,not-run,,,,,Role for Sync Observation
+SNTS-227,High,User Profile / Notifications,A,ready,client-admin,yes,,,not-run,,,,,Changes own notification preferences; restore in finally
+SNTS-229,Low,Homepage / QR Code,A,ready,client-admin,no,,,not-run,,,,,Clipboard read needs Chromium permissions; expected URL not stated
+SNTS-230,Low,My Observation,D,manual-only,tbd,no,,,not-run,,,,,Spacing
+SNTS-234,High,Client Admin / Whitelisted Domains,E,blocked,new-registration,yes,,,not-run,,,,,Registration with whitelisted domain and email verification
+SNTS-235,High,Client Admin / Registration,E,needs-clarification,new-registration,yes,,,not-run,,,,,"Ticket says behavior ""not confirmed""; needs the documented flow"
+SNTS-236,Medium,Client Admin / Invitations,E,needs-clarification,client-admin,yes,,,not-run,,,,,Behavior not confirmed; Gmail inbox access
+SNTS-237,High,Client Admin / Invite Management,E,needs-clarification,client-admin,yes,,,not-run,,,,,Behavior not confirmed; sends invitations
+SNTS-239,Medium,Super Admin / Suggested Questions,A,needs-clarification,super-admin,yes,,,not-run,,,,,"Feature request, not a defect"
+SNTS-240,Medium,Super Admin / Module Access,A,blocked,super-admin,yes,,,not-run,,,,,Changes module access for an organization; needs a test org
+SNTS-241,Medium,Team User / Lessons,A,blocked,team-user,yes,,,not-run,,,,,Needs Team User role
+SNTS-242,Medium,Team User / New Observation,A,pilot,team-user,no,,,blocked,not-started,,,codex,"Pilot blocked 2026-10-10: no .env on the workstation (needs SENTIS_CLIENT_ADMIN_* to check access, else SENTIS_TEAM_USER_*). Not implemented, because selectors and screens need a signed-in session to verify"
+SNTS-243,Low,Leader User / Permissions,A,blocked,leader-user,no,,,not-run,,,,,Needs Leader role
+SNTS-244,Medium,Super Admin / Invitations,E,blocked,super-admin,yes,,,not-run,,,,,Sends a real invitation email
+SNTS-245,High,Training / Lesson 1,A,needs-clarification,tbd,no,,,not-run,,,,,Approved copy must come from the ticket attachment
+SNTS-246,High,Training / Lesson 1,D,needs-clarification,tbd,no,,,not-run,,,,,Role with Lesson 1 access
+SNTS-247,High,Training / Lesson 3,A,needs-clarification,tbd,no,,,not-run,,,,,Approved copy
+SNTS-248,High,Training / Lesson 4,A,needs-clarification,tbd,no,,,not-run,,,,,Approved copy
+SNTS-250,Low,Mobile / Dashboard,C,manual-only,anonymous,no,,,not-run,,,,,iPhone Dynamic Island safe area
+SNTS-251,Low,Mobile / SAM AI Assistant,F,needs-clarification,tbd,no,,,not-run,,,,,Layout only; sending a message calls the AI
+SNTS-256,Low,Super Admin / Organization View,A,blocked,super-admin,no,,,not-run,,,,,Needs a non-demo organization with its own logo
+SNTS-261,High,Email Verification,E,blocked,new-registration,yes,,,not-run,,,,,Email verification
+SNTS-262,Medium,Registration / Whitelisted Domains,E,blocked,new-registration,yes,,,not-run,,,,,Whitelisted domain registration
+SNTS-263,Medium,User Workspace / Branding,A,needs-clarification,tbd,no,,,not-run,,,,,Which organization and expected tenant name
+SNTS-264,Medium,Registration / Approved Domains,E,blocked,new-registration,yes,,,not-run,,,,,Approved domain registration
+SNTS-265,Medium,Super Admin / SAM AI,A,pilot,super-admin,no,,,blocked,not-started,,,codex,"Pilot blocked 2026-10-10: no .env on the workstation (needs SENTIS_SUPER_ADMIN_*). Not implemented, because selectors and screens need a signed-in session to verify"
