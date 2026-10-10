@@ -13,12 +13,12 @@ counts. Failures are written to `Sentis-evidence/<UTC date>/<Jira ID>/<time>-<pr
 | SNTS-139 role access (both scenarios) | chromium | Dashboards | Summary only | None |
 | SNTS-138 Custom date range picker | chromium | Manage tab lists accounts | Reviewed screenshot | Reviewed: Manage account card and org form masked, page blanked afterwards |
 | SNTS-221 Observation legend icon | chromium | PST Reports can list observations | Summary only | Withheld: the tab panel capture is not reviewed |
-| SNTS-265 SAM AI organization switch | chromium | Crash screen; SAM AI dashboard | Reviewed crash screenshots and the switch log (organization names only) | Reviewed: error screen has no data |
+| SNTS-265 SAM AI organization switch | chromium | Crash screen; SAM AI dashboard | Reviewed crash screenshots; the switch log is not retained (not an `evidence:` attachment) | Reviewed: error screen has no data |
 | SNTS-204 sections fit mobile without overflow | chromium (iPhone) | Manage, User Details, Audit Logs and Prompt History list people | `geometry.json` (tab, section heading, widths, cut in px) | None, by design |
 | SNTS-205 New Training Module dialog | chromium (iPhone) | Training content | Reviewed screenshot | Reviewed: dialog over the training list; no people |
-| SNTS-209 Edit Training Module dialog | chromium (iPhone) | Training content | Reviewed screenshot | Reviewed: same as SNTS-205 |
+| SNTS-209 Edit Training Module dialog | chromium (iPhone) | Training content | Reviewed screenshot | Reviewed: the table mask also covers the lower half of the dialog; the defect (Close over the title) stays visible |
 | SNTS-140 invite dialog, desktop and mobile | chromium | Users table behind the dialog | Reviewed screenshot | Reviewed: users table masked (mask verified on a real capture) |
-| SNTS-183 invite dialog on mobile | chromium (iPhone) | Users table behind the dialog | Reviewed screenshot | Reviewed: users table masked (verified) |
+| SNTS-183 invite dialog on mobile | chromium (iPhone) | Users table behind the dialog | Reviewed open-dialog screenshot | Reviewed: users table masked (verified). The catch-path "Inspect Users failure" capture is withheld (not reviewed) |
 | SNTS-176 custom range calendar on mobile | chromium (iPhone) | Client admin dashboard counts | Reviewed screenshot | Reviewed: calendar over dashboard counts |
 | SNTS-197 Log Out in mobile sidebar | chromium (iPhone) | Sidebar (not reviewed) | Summary only | Withheld |
 | SNTS-182 tab switch scroll position | chromium (iPhone) | Client admin content (not reviewed) | Summary only | Withheld |
