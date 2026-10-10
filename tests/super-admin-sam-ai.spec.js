@@ -11,6 +11,8 @@ test.describe('Super Admin SAM AI', () => {
     test.setTimeout(60000);
     const pageErrors = [];
     page.on('pageerror', error => pageErrors.push(error.message));
+    let organizationSelector;
+    let initialOrganization;
 
     try {
       await page.goto('/?admin=super');
@@ -32,7 +34,6 @@ test.describe('Super Admin SAM AI', () => {
         timeout: 20000,
       }).toBe(true);
 
-      let organizationSelector;
       let organizations;
       const discoveries = [];
       for (const selectedName of await comboboxes.allTextContents()) {
@@ -61,7 +62,7 @@ test.describe('Super Admin SAM AI', () => {
       const distinctOrganizations = [...new Set(organizations)];
       expect(distinctOrganizations.length, 'Blocked: fewer than 2 organizations').toBeGreaterThanOrEqual(2);
 
-      const initialOrganization = await organizationSelector.textContent();
+      initialOrganization = await organizationSelector.textContent();
       const targets = distinctOrganizations.filter(name => name !== initialOrganization).slice(0, 3);
       const switchedOrganizations = [];
       for (const organization of targets) {
@@ -90,6 +91,14 @@ test.describe('Super Admin SAM AI', () => {
         body: await page.screenshot(), contentType: 'image/png',
       });
     } finally {
+      // The super-admin account is shared, so leave its selected organization as we found it.
+      if (organizationSelector && initialOrganization
+        && (await organizationSelector.textContent()) !== initialOrganization) {
+        await organizationSelector.click();
+        await page.getByRole('listbox').getByRole('option', { name: initialOrganization, exact: true }).click();
+        await expect.soft(page.getByRole('combobox').filter({ hasText: exactText(initialOrganization) }),
+          'Initial organization is restored').toHaveCount(1);
+      }
       expect.soft(pageErrors, `SAM AI page errors: ${pageErrors.join('\n') || 'none'}`).toEqual([]);
     }
   });
