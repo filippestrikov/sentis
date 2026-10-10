@@ -62,6 +62,7 @@ corrected expected behavior; if the defect is present the test fails, and that f
 
 ### Sensitive data
 
+Step titles are masked by `tests/support/mask-reporter.js`, so keep it first in the reporter list.
 Never share `playwright-report/` or `test-results/` from signed-in runs without checking them for sensitive data. Traces are retained only for `public`; `setup` disables screenshots as well. Evidence folders follow the reporter's rule: masked summaries and screenshots, traces/videos only for `public`, and nothing from `setup` or `.auth/`.
 
 ## Git

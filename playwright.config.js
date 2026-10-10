@@ -17,6 +17,7 @@ module.exports = defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [
+    ['./tests/support/mask-reporter.js'],
     ['list'],
     ['html', { open: 'never' }],
     ['./tests/support/evidence-reporter.js'],
