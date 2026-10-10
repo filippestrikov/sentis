@@ -40,15 +40,7 @@ test.describe('Super Admin training dialog on mobile', () => {
     }
   });
 
-});
-
-test.describe('SNTS-209 masked failure evidence', () => {
-  test.use(iPhone);
-  asRole(test, 'super-admin');
   test('SNTS-209: edit training module dialog fits on mobile without overlapping controls', async ({ page }, testInfo) => {
-    // Include tables hidden by dialogs in both explicit attachments and Playwright's automatic failure capture.
-    const capture = page.screenshot.bind(page);
-    page.screenshot = (options = {}) => capture({ ...options, mask: [page.getByRole('table', { includeHidden: true })] });
     await gotoApp(page, '/?admin=super');
     const navigation = page.getByRole('navigation', { name: 'Admin sections', exact: true });
     await expect(navigation).toBeVisible();
@@ -72,7 +64,7 @@ test.describe('SNTS-209 masked failure evidence', () => {
         label: 'SNTS-209 mobile training dialog',
       });
       if (testInfo.errors.length) await testInfo.attach('SNTS-209 open dialog failure', {
-        body: await page.screenshot(), contentType: 'image/png',
+        body: await page.screenshot({ mask: [page.getByRole('table', { includeHidden: true })] }), contentType: 'image/png',
       });
     } catch (error) {
       if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) await testInfo.attach('Edit Training Module failure', {

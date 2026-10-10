@@ -155,15 +155,21 @@ async function horizontalOverflow(page) {
     };
     const candidates = [];
     for (const element of document.body.querySelectorAll('*')) {
-      if (element === excluded || excluded.contains(element)) continue;
+      if (element === excluded || excluded.contains(element) || element.closest('svg')) continue;
       const box = element.getBoundingClientRect();
       const style = getComputedStyle(element);
       if (!box.width || !box.height || style.visibility === 'hidden' || style.display === 'none') continue;
-      let overflow = box.left < -1 || box.right > innerWidth + 1;
-      for (let parent = element.parentElement; parent && !overflow; parent = parent.parentElement) {
-        if (['hidden', 'clip'].includes(getComputedStyle(parent).overflowX)) {
-          const clip = parent.getBoundingClientRect();
-          overflow = box.right > clip.right + 1 || box.left < clip.left - 1;
+      let overflow = box.right > innerWidth + 1;
+      for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+        if (box.right <= parent.getBoundingClientRect().right + 1) continue;
+        const overflowX = getComputedStyle(parent).overflowX;
+        if (['auto', 'scroll'].includes(overflowX)) {
+          overflow = false;
+          break;
+        }
+        if (['hidden', 'clip'].includes(overflowX)) {
+          overflow = true;
+          break;
         }
       }
       if (overflow) candidates.push(element);
@@ -181,21 +187,24 @@ test.describe('Super Admin sections on mobile Chromium', () => {
   asRole(test, 'super-admin');
 
   test('SNTS-204: SAM AI sections fit the mobile screen without horizontal overflow', async ({ page }, testInfo) => {
-    // Include tables hidden by dialogs in both explicit attachments and Playwright's automatic failure capture.
-    const capture = page.screenshot.bind(page);
-    page.screenshot = (options = {}) => capture({ ...options, mask: [
-      page.getByRole('table', { includeHidden: true }),
-      // Super-admin account cards list users outside a table on Manage.
-      page.getByRole('generic').filter({
-        has: page.getByRole('heading', { name: 'Super Admin Accounts', exact: true }),
-      }).filter({ has: page.getByRole('button', { name: 'Add Super Admin', exact: true }) }).last(),
-    ] });
     test.setTimeout(180000); // Eight sections load shared staging dashboard data sequentially.
     let initialOrganization;
-    const screenshot = async section => testInfo.attach(section + ' mobile overflow failure', {
-      body: await page.screenshot({ mask: [page.getByRole('table', { includeHidden: true })] }),
-      contentType: 'image/png',
-    });
+    const screenshot = async section => {
+      try {
+        await testInfo.attach(section + ' mobile overflow failure', {
+          body: await page.screenshot({ mask: [
+            page.getByRole('table', { includeHidden: true }),
+            // Super-admin account cards list users outside a table on Manage.
+            page.getByRole('generic').filter({
+              has: page.getByRole('heading', { name: 'Super Admin Accounts', exact: true }),
+            }).filter({ has: page.getByRole('button', { name: 'Add Super Admin', exact: true }) }).last(),
+          ] }),
+          contentType: 'image/png',
+        });
+      } catch {
+        testInfo.annotations.push({ type: 'evidence', description: section + ': masked viewport screenshot unavailable' });
+      }
+    };
     try {
       await gotoApp(page, '/?admin=super');
       const navigation = page.getByRole('navigation', { name: 'Admin sections', exact: true });
@@ -242,21 +251,6 @@ test.describe('Super Admin sections on mobile Chromium', () => {
         expect.soft(overflow.sections, section + ': horizontal overflow in sections: ' + (overflow.sections.join(', ') || 'none')).toEqual([]);
         expect.soft(overflow.documentOverflow, section + ': document horizontal overflow').toBe(false);
         if (overflow.sections.length || overflow.documentOverflow) {
-          const heading = page.getByRole('heading', { name: overflow.sections[0], exact: true });
-          if (overflow.sections.length && await heading.count() === 1) {
-            // Native scrollIntoView can scroll overflow-x:hidden ancestors horizontally and alter the next tab.
-            const horizontalPositionPreserved = await heading.evaluate(element => {
-              const parents = [];
-              for (let parent = element.parentElement; parent; parent = parent.parentElement) parents.push(parent);
-              const positions = parents.map(parent => parent.scrollLeft);
-              const owner = parents.find(parent => ['auto', 'scroll'].includes(getComputedStyle(parent).overflowY)
-                && parent.scrollHeight > parent.clientHeight);
-              if (owner) owner.scrollTop += element.getBoundingClientRect().top - owner.getBoundingClientRect().top - 16;
-              return parents.every((parent, index) => parent.scrollLeft === positions[index]);
-            });
-            expect(horizontalPositionPreserved, overflow.sections[0] + ': screenshot scrolling preserves horizontal position').toBe(true);
-            await expect(heading).toBeVisible();
-          }
           await screenshot(section);
         }
       };

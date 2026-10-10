@@ -147,15 +147,7 @@ test.describe('Client Admin on mobile Chromium', () => {
     }
   });
 
-});
-
-test.describe('SNTS-183 masked failure evidence', () => {
-  test.use(iPhone);
-  asRole(test, 'client-admin');
   test('SNTS-183: user invitation dialog fits on mobile with every control reachable', async ({ page }, testInfo) => {
-    // Include tables hidden by dialogs in both explicit attachments and Playwright's automatic failure capture.
-    const capture = page.screenshot.bind(page);
-    page.screenshot = (options = {}) => capture({ ...options, mask: [page.getByRole('table', { includeHidden: true })] });
     await gotoApp(page, '/?admin=client&tab=modules');
     const navigation = page.getByRole('navigation', { name: 'Admin sections', exact: true });
     await expect(navigation).toBeVisible();
