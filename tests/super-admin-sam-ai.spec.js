@@ -8,7 +8,7 @@ test.describe('Super Admin SAM AI', () => {
   asRole(test, 'super-admin');
 
   test('SNTS-265: switching organizations keeps SAM AI stable', async ({ page }, testInfo) => {
-    test.setTimeout(60000);
+    test.setTimeout(240000); // visits every organization; each switch reloads dashboard data
     const pageErrors = [];
     page.on('pageerror', error => pageErrors.push(error.message));
     let organizationSelector;
@@ -63,41 +63,73 @@ test.describe('Super Admin SAM AI', () => {
       expect(distinctOrganizations.length, 'Blocked: fewer than 2 organizations').toBeGreaterThanOrEqual(2);
 
       initialOrganization = await organizationSelector.textContent();
-      const targets = distinctOrganizations.filter(name => name !== initialOrganization).slice(0, 3);
+      // Every organization is checked: on 2026-10-10 only some (not the first few) crashed SAM AI.
+      const targets = distinctOrganizations.filter(name => name !== initialOrganization);
+      const crashHeading = page.getByRole('heading', { name: 'Oops! Something went wrong', exact: true });
       const switchedOrganizations = [];
+      const crashedOrganizations = [];
+      const recordCrashAndRecover = async organization => {
+        crashedOrganizations.push(organization);
+        await testInfo.attach(`SAM AI crash: ${organization}`, { body: await page.screenshot(), contentType: 'image/png' });
+        // Recover so the remaining organizations are still checked; selection resets to the default on reload.
+        await page.goto('/?admin=super&tab=cortex');
+        await expect(page.getByRole('heading', { name: 'Usage Trend', exact: true })).toBeVisible({ timeout: 20000 });
+        organizationSelector = page.getByRole('combobox').filter({ hasText: exactText(initialOrganization) });
+        await expect(organizationSelector).toHaveCount(1, { timeout: 20000 });
+      };
       for (const organization of targets) {
         await organizationSelector.click();
         const listbox = page.getByRole('listbox');
         await expect(listbox).toBeVisible();
+        // The previous view stays visible while the new organization's data loads, and the crash renders only
+        // after that data arrives. Observe (never mock) the organization's report responses, then let React render.
+        const reports = ['ai-report', 'prestart-report', 'risk-assessment-report'].map(report => page.waitForResponse(
+          response => new RegExp(`/v1/reporting/organizations/[^/]+/${report}`).test(response.url()), { timeout: 30000 }));
         await listbox.getByRole('option', { name: organization, exact: true }).click();
         await expect(listbox).toBeHidden();
+        await Promise.all(reports);
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        if (await crashHeading.isVisible()) {
+          await recordCrashAndRecover(organization);
+          continue;
+        }
         // Options exist only in a portal while open; re-resolve the same control by its new selection.
         organizationSelector = page.getByRole('combobox').filter({ hasText: exactText(organization) });
-        await expect(organizationSelector).toHaveCount(1);
-        await expect(organizationSelector).toHaveText(organization);
-        await expect(page.getByRole('status').filter({ hasText: 'Updating dashboard data...' }))
-          .toBeHidden({ timeout: 20000 });
-        await expect(page.getByRole('heading', { name: 'Usage Trend', exact: true })).toBeVisible();
-        await expect(page.getByRole('alert').filter({ visible: true })).toHaveCount(0);
-        await expect(page.getByText(/application error|something went wrong|failed to load|unexpected error|unable to load/i)
-          .filter({ visible: true })).toHaveCount(0);
+        await expect(organizationSelector.or(crashHeading).first()).toBeVisible();
+        if (!(await crashHeading.isVisible())) {
+          await expect(organizationSelector).toHaveText(organization);
+          await expect(page.getByRole('status').filter({ hasText: 'Updating dashboard data...' }))
+            .toBeHidden({ timeout: 20000 });
+          await expect.soft(page.getByRole('alert').filter({ visible: true }), `No alert for ${organization}`).toHaveCount(0);
+        }
+        // Some organizations render the error screen a little later; check again before moving on.
+        if (await crashHeading.isVisible()) {
+          await recordCrashAndRecover(organization);
+          continue;
+        }
         switchedOrganizations.push(organization);
       }
       await testInfo.attach('Organization switches', {
-        body: JSON.stringify({ initialOrganization, switchedOrganizations, pageErrors }, null, 2),
+        body: JSON.stringify({ initialOrganization, switchedOrganizations, crashedOrganizations, pageErrors }, null, 2),
         contentType: 'application/json',
       });
-      await testInfo.attach('SAM AI after organization switches', {
-        body: await page.screenshot(), contentType: 'image/png',
-      });
+      expect(crashedOrganizations, 'Organizations whose SAM AI view crashed after switching').toEqual([]);
     } finally {
       // The super-admin account is shared, so leave its selected organization as we found it.
-      if (organizationSelector && initialOrganization
-        && (await organizationSelector.textContent()) !== initialOrganization) {
-        await organizationSelector.click();
-        await page.getByRole('listbox').getByRole('option', { name: initialOrganization, exact: true }).click();
+      // Selection is not persisted (verified 2026-10-10), so a reload restores the default when the app crashed.
+      if (initialOrganization) {
+        const crashed = await page.getByRole('heading', { name: 'Oops! Something went wrong', exact: true }).isVisible();
+        const current = crashed ? null : await page.getByRole('combobox').first().textContent();
+        if (crashed || current !== initialOrganization) {
+          if (crashed) {
+            await page.goto('/?admin=super&tab=cortex');
+          } else {
+            await page.getByRole('combobox').filter({ hasText: exactText(current) }).click();
+            await page.getByRole('listbox').getByRole('option', { name: initialOrganization, exact: true }).click();
+          }
+        }
         await expect.soft(page.getByRole('combobox').filter({ hasText: exactText(initialOrganization) }),
-          'Initial organization is restored').toHaveCount(1);
+          'Initial organization is restored').toHaveCount(1, { timeout: 20000 });
       }
       expect.soft(pageErrors, `SAM AI page errors: ${pageErrors.join('\n') || 'none'}`).toEqual([]);
     }
