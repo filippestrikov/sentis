@@ -1,5 +1,6 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect, devices } = require('@playwright/test');
 const { asRole } = require('./support/roles');
+const { expectDialogLayout } = require('./support/layout');
 const { developmentGuideTitle } = require('./fixtures/pre-start-observation.json');
 
 test.describe('Pre-start Observation', () => {
@@ -30,6 +31,55 @@ test.describe('Pre-start Observation', () => {
     } finally {
       await page.keyboard.press('Escape');
       await expect(dialog).toBeHidden();
+    }
+  });
+});
+
+const { defaultBrowserType, ...iPhone } = devices['iPhone 15 Pro Max'];
+
+test.describe('Pre-start Observation guide layout on mobile', () => {
+  test.use(iPhone);
+  asRole(test, 'client-admin');
+
+  test('SNTS-167: development guide header fits on mobile without Close overlap', async ({ page }, testInfo) => {
+    test.setTimeout(60000);
+    await page.goto('/');
+    // The mobile menu has no accessible name; it is the homepage's only unnamed button.
+    const menu = page.getByRole('button', { name: '', exact: true });
+    await expect(menu).toHaveCount(1);
+    await expect(menu).toBeVisible();
+    const initialUrl = page.url();
+    const sidebar = page.getByRole('dialog', { name: 'Navigation', exact: true });
+    const dialog = page.getByRole('dialog', { name: /development guide|competency framework/i });
+    try {
+      await menu.click();
+      await expect(sidebar).toBeVisible();
+      await sidebar.getByRole('button', { name: 'New Observation', exact: true }).click();
+      await expect(page).toHaveURL(/[?&]view=prestart-observation(?:&|$)/);
+      // Navigation remains open after selecting a destination on mobile.
+      await page.keyboard.press('Escape');
+      await expect(sidebar).toBeHidden();
+      await expect(page.getByRole('heading', { name: 'Meeting Details', exact: true })).toBeVisible();
+      await page.getByRole('button', { name: /development guide|competency framework/i }).click();
+      await expect(dialog).toBeVisible();
+      await expectDialogLayout(page, dialog, {
+        heading: dialog.getByRole('heading', { name: /development guide|competency framework/i, level: 2 }),
+        label: 'SNTS-167 mobile guide dialog',
+      });
+      if (testInfo.errors.length) await testInfo.attach('SNTS-167 open dialog failure', {
+        body: await page.screenshot(), contentType: 'image/png',
+      });
+    } finally {
+      try {
+        if (await dialog.isVisible()) await page.keyboard.press('Escape');
+        await expect(dialog).toBeHidden();
+      } finally {
+        await page.goto(initialUrl);
+        await expect(page).toHaveURL(initialUrl);
+        await expect(sidebar).toBeHidden();
+        await expect(menu).toHaveCount(1);
+        await expect(menu).toBeVisible();
+      }
     }
   });
 });
