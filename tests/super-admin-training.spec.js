@@ -1,4 +1,5 @@
 const { test, expect, devices } = require('@playwright/test');
+const { gotoApp } = require('./support/navigation');
 const { asRole } = require('./support/roles');
 const { expectDialogLayout } = require('./support/layout');
 
@@ -9,7 +10,7 @@ test.describe('Super Admin training dialog on mobile', () => {
   asRole(test, 'super-admin');
 
   test('SNTS-205: new training module dialog fits on mobile without overlapping controls', async ({ page }, testInfo) => {
-    await page.goto('/?admin=super');
+    await gotoApp(page, '/?admin=super');
     const navigation = page.getByRole('navigation', { name: 'Admin sections', exact: true });
     await expect(navigation).toBeVisible();
     const initialUrl = page.url();
@@ -32,7 +33,7 @@ test.describe('Super Admin training dialog on mobile', () => {
         if (await dialog.isVisible()) await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
         await expect(dialog).toBeHidden();
       } finally {
-        await page.goto(initialUrl);
+        await gotoApp(page, initialUrl);
         await expect(page).toHaveURL(initialUrl);
         await expect(navigation).toBeVisible();
       }

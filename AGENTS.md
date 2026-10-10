@@ -44,6 +44,9 @@ corrected expected behavior; if the defect is present the test fails, and that f
 
 ### Known staging behavior
 
+- Cold load is ~4.5 s; signed-in shells wait for `/v1/auth/me` after load.
+- api-sam slows under parallel load. Use `gotoApp` for app navigation.
+- Fresh public `/` sends no bootstrap request; use `{ waitForBootstrap: false }` there.
 - `/` shows the sign-in form ("Welcome to Sentis Applied Minds"). Client users sign in there.
 - Super-admins sign in through the header's "Super Admin" button, a "Sentis Super Admin"
   dialog whose inputs are named only by placeholder (no labels).

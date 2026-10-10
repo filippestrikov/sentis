@@ -37,6 +37,8 @@ module.exports = defineConfig({
   ],
   use: {
     baseURL: 'https://sam.sentis.com/',
+    // ~2x the slowest measured load: stalls fail at page.goto with a screenshot instead of an anonymous test timeout.
+    navigationTimeout: 20000,
     trace: 'off',
     screenshot: 'only-on-failure',
   },

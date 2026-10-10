@@ -1,4 +1,5 @@
 const { test, expect, devices } = require('@playwright/test');
+const { gotoApp } = require('./support/navigation');
 const { asRole } = require('./support/roles');
 
 const { defaultBrowserType, ...iPhone } = devices['iPhone 15 Pro Max'];
@@ -25,7 +26,7 @@ test.describe('Client Admin on mobile Chromium', () => {
   asRole(test, 'client-admin');
 
   test('SNTS-197: Log Out is accessible inside the mobile homepage sidebar', async ({ page }, testInfo) => {
-    await page.goto('/');
+    await gotoApp(page, '/');
     // Mobile menu button has no accessible name (a11y gap), so it is located by its icon
     const menu = page.getByRole('button').filter({ has: page.locator('svg.lucide-menu') });
     const sidebar = page.getByRole('dialog', { name: 'Navigation', exact: true });
@@ -63,7 +64,7 @@ test.describe('Client Admin on mobile Chromium', () => {
   });
 
   test('SNTS-176: the custom date range calendar fits inside the mobile viewport', async ({ page }, testInfo) => {
-    await page.goto('/?admin=client&tab=modules');
+    await gotoApp(page, '/?admin=client&tab=modules');
     await expect(page.getByRole('heading', { name: /Admin Dashboard$/, level: 1 })).toBeVisible();
     const range = page.getByRole('combobox');
     const calendar = page.getByRole('dialog', { name: '', exact: true });
@@ -102,7 +103,7 @@ test.describe('Client Admin on mobile Chromium', () => {
   });
 
   test('SNTS-182: switching from Training to Guides scrolls the content to the top', async ({ page }, testInfo) => {
-    await page.goto('/?admin=client&tab=modules');
+    await gotoApp(page, '/?admin=client&tab=modules');
     await expect(page.getByRole('heading', { name: /Admin Dashboard$/, level: 1 })).toBeVisible();
     const sections = page.getByRole('navigation', { name: 'Admin sections', exact: true });
     const training = sections.getByRole('button', { name: 'Training', exact: true });
