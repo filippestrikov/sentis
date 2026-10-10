@@ -71,7 +71,7 @@ test.describe('Super Admin SAM AI', () => {
       const crashedOrganizations = [];
       const recordCrashAndRecover = async organization => {
         crashedOrganizations.push(organization);
-        await testInfo.attach(`SAM AI crash: ${organization}`, { body: await page.screenshot(), contentType: 'image/png' });
+        await testInfo.attach(`reviewed: SAM AI crash: ${organization}`, { body: await page.screenshot(), contentType: 'image/png' });
         // Recover so the remaining organizations are still checked; selection resets to the default on reload.
         await gotoApp(page, '/?admin=super&tab=cortex');
         await expect(page.getByRole('heading', { name: 'Usage Trend', exact: true })).toBeVisible({ timeout: 20000 });
@@ -202,7 +202,7 @@ test.describe('Super Admin sections on mobile Chromium', () => {
     let currentTab = 'SAM AI';
     const attachGeometry = async (tab, overflow) => {
       try {
-        await testInfo.attach(tab + ' mobile overflow geometry', {
+        await testInfo.attach('evidence: ' + tab + ' mobile overflow geometry', {
           body: JSON.stringify(overflow.elements.map(element => ({ tab, ...element })), null, 2),
           contentType: 'application/json',
         });

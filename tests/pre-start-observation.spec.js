@@ -25,7 +25,7 @@ test.describe('Pre-start Observation', () => {
       })).toHaveText(developmentGuideTitle);
     } catch (error) {
       // Preserve the open dialog before cleanup closes it on a title failure.
-      await testInfo.attach('Development guide title failure', {
+      await testInfo.attach('reviewed: Development guide title failure', {
         body: await page.screenshot(), contentType: 'image/png',
       });
       throw error;
@@ -67,7 +67,7 @@ test.describe('Pre-start Observation guide layout on mobile', () => {
         heading: dialog.getByRole('heading', { name: /development guide|competency framework/i, level: 2 }),
         label: 'SNTS-167 mobile guide dialog',
       });
-      if (testInfo.errors.length) await testInfo.attach('SNTS-167 open dialog failure', {
+      if (testInfo.errors.length) await testInfo.attach('reviewed: SNTS-167 open dialog failure', {
         body: await page.screenshot(), contentType: 'image/png',
       });
     } finally {

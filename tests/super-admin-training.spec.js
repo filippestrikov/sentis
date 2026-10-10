@@ -25,7 +25,7 @@ test.describe('Super Admin training dialog on mobile', () => {
         heading: dialog.getByRole('heading', { name: 'New Training Module', exact: true }),
         label: 'SNTS-205 mobile training dialog',
       });
-      if (testInfo.errors.length) await testInfo.attach('SNTS-205 open dialog failure', {
+      if (testInfo.errors.length) await testInfo.attach('reviewed: SNTS-205 open dialog failure', {
         body: await page.screenshot(), contentType: 'image/png',
       });
     } finally {
@@ -63,11 +63,11 @@ test.describe('Super Admin training dialog on mobile', () => {
         heading: dialog.getByRole('heading', { name: 'Edit Training Module', exact: true }),
         label: 'SNTS-209 mobile training dialog',
       });
-      if (testInfo.errors.length) await testInfo.attach('SNTS-209 open dialog failure', {
+      if (testInfo.errors.length) await testInfo.attach('reviewed: SNTS-209 open dialog failure', {
         body: await page.screenshot({ mask: [page.getByRole('table', { includeHidden: true })] }), contentType: 'image/png',
       });
     } catch (error) {
-      if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) await testInfo.attach('Edit Training Module failure', {
+      if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) await testInfo.attach('reviewed: Edit Training Module failure', {
         body: await page.screenshot({ mask: [page.getByRole('table', { includeHidden: true })] }), contentType: 'image/png',
       });
       throw error;

@@ -8,7 +8,8 @@
     "test:ui": "playwright test --ui",
     "test:list": "playwright test --list",
     "test:report": "playwright show-report",
-    "security:leak-check": "node scripts/leak-regression.js"
+    "security:leak-check": "node scripts/leak-regression.js",
+    "security:evidence-check": "node scripts/evidence-privacy-regression.js"
   },
   "devDependencies": {
     "@playwright/test": "1.55.1"
