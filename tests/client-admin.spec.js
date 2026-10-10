@@ -44,7 +44,9 @@ test.describe('Client Admin invite dialog layout', () => {
             expect.soft(intersects, `${label}: Close button does not overlap subheading`).toBe(false);
           }
           if (testInfo.errors.length > errorsBefore) await testInfo.attach(`${label} open dialog failure`, {
-            body: await page.screenshot(), contentType: 'image/png',
+            // The users table behind the dialog lists account emails; the open dialog hides it from the
+            // accessibility tree, so include hidden elements when masking it.
+            body: await page.screenshot({ mask: [page.getByRole('table', { includeHidden: true })] }), contentType: 'image/png',
           });
         } finally {
           if (await dialog.isVisible()) await page.keyboard.press('Escape');
