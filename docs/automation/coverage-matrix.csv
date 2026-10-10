@@ -23,7 +23,7 @@ SNTS-148,Medium,Request Organization Access,A,blocked,no-org-user,no,,,not-run,,
 SNTS-149,Low,Request Organization Access,A,blocked,no-org-user,no,,,not-run,,,,,Needs no-org account; destination not specified
 SNTS-150,Medium,Account / Security,B,blocked,disposable-user,yes,,,not-run,,,,,Password form on a shared account is unsafe; needs a disposable account
 SNTS-151,High,Account / Security,A,blocked,disposable-user,yes,,,not-run,,,,,Changes the password; needs a disposable account
-SNTS-156,Low,Super Admin Login / Mobile,C,pilot,anonymous,no,,,not-run,pending,,,codex,Public; mobile viewport layout of Super Admin dialog
+SNTS-156,Low,Super Admin Login / Mobile,C,pilot,anonymous,no,tests/super-admin-login.spec.js,SNTS-156: Super Admin login popup fits and is aligned on mobile,failed-defect,approved,3c312fb,E:/Codex/Sentis-evidence/2026-10-10/SNTS-156 (screenshot, trace.zip, html report),codex,"2026-10-10: product defect reproduced; Close button overlaps and clips the heading at 430px (Chromium iPhone 15 Pro Max emulation, not Safari on iOS). Viewport and control containment checks pass. Lead re-ran it twice with the same single failing assertion"
 SNTS-157,Medium,Homepage / Pre-start Rating,A,blocked,user-without-reservation,no,,,not-run,,,,,Needs an account with no pre-start reservation
 SNTS-159,Medium,Homepage / Pre-start Rating,A,blocked,tbd,yes,,,not-run,,,,,Needs a rated reservation; changes rating
 SNTS-161,Medium,Homepage / Sidebar / Mobile,D,ready,client-admin,no,,,not-run,,,,,Mobile dark theme; contrast via computed colors
