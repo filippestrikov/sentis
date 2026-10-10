@@ -1,4 +1,5 @@
 const { test: setup, expect } = require('@playwright/test');
+const { gotoApp } = require('./support/navigation');
 const { roles, credentials, storageStatePath } = require('./support/roles');
 
 setup.afterEach(async ({ page }, testInfo) => {
@@ -24,7 +25,7 @@ for (const [role, { superAdminPortal }] of Object.entries(roles)) {
     setup.skip(!email || !password, `Set ${missing} to sign in as ${role}`);
 
     await setup.step("Navigate: page.goto('/')", async () => {
-      await page.goto('/');
+      await gotoApp(page, '/', { waitForBootstrap: false });
     });
     await setup.step('Wait for sign-in heading', async () => {
       await expect(page.getByRole('heading', { name: 'Welcome to Sentis Applied Minds' })).toBeVisible();

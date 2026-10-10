@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./support/navigation');
 const { asRole } = require('./support/roles');
 
 const exactText = text => new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
@@ -21,7 +22,7 @@ async function restoreDashboard(page) {
     await page.keyboard.press('Escape');
     // Dashboard selections are not persisted across reloads (lead verified 2026-10-10).
     // Reload also restores the original Manage tab if a report or picker has crashed.
-    await page.goto('/?admin=super');
+    await gotoApp(page, '/?admin=super');
     await expect(page).toHaveURL(/\?admin=super$/);
     await expect(page.getByRole('heading', { name: 'New Organisation', exact: true })).toBeVisible();
     await expect(page.getByRole('combobox').filter({ hasText: /^Example Customer Org$/ })).toBeVisible({ timeout: 30000 });
@@ -43,7 +44,7 @@ test.describe('Super Admin dashboard', () => {
   test.setTimeout(120000);
 
   test('SNTS-138: selecting Custom opens a date picker', async ({ page }, testInfo) => {
-    await page.goto('/?admin=super');
+    await gotoApp(page, '/?admin=super');
     await expect(page.getByRole('heading', {
       name: 'Sentis Super Admin Dashboard', exact: true,
     })).toBeVisible();
@@ -71,7 +72,7 @@ test.describe('Super Admin dashboard', () => {
   });
 
   test('SNTS-221: the Overall Rating Observation icon renders correctly', async ({ page }, testInfo) => {
-    await page.goto('/?admin=super');
+    await gotoApp(page, '/?admin=super');
     await expect(page.getByRole('heading', {
       name: 'Sentis Super Admin Dashboard', exact: true,
     })).toBeVisible();

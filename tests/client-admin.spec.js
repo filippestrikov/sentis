@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./support/navigation');
 const { asRole } = require('./support/roles');
 const { expectDialogLayout, textBox } = require('./support/layout');
 
@@ -7,7 +8,7 @@ test.describe('Client Admin invite dialog layout', () => {
   test.use({ viewport: { width: 1366, height: 768 } });
 
   test('SNTS-140: invite dialog Close avoids the subheading on desktop and mobile', async ({ page }, testInfo) => {
-    await page.goto('/?admin=client&tab=modules');
+    await gotoApp(page, '/?admin=client&tab=modules');
     const navigation = page.getByRole('navigation', { name: 'Admin sections', exact: true });
     await expect(navigation).toBeVisible();
     const initialUrl = page.url();
@@ -60,7 +61,7 @@ test.describe('Client Admin invite dialog layout', () => {
       } finally {
         await page.setViewportSize(initialViewport);
         expect(page.viewportSize(), 'Initial viewport is restored').toEqual(initialViewport);
-        await page.goto(initialUrl);
+        await gotoApp(page, initialUrl);
         await expect(page).toHaveURL(initialUrl);
         await expect(navigation.getByRole('button', { name: 'Training', exact: true })).toBeVisible();
       }

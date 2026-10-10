@@ -1,4 +1,5 @@
 const { test, expect, devices } = require('@playwright/test');
+const { gotoApp } = require('./support/navigation');
 const { asRole } = require('./support/roles');
 const { expectDialogLayout } = require('./support/layout');
 const { developmentGuideTitle } = require('./fixtures/pre-start-observation.json');
@@ -7,7 +8,7 @@ test.describe('Pre-start Observation', () => {
   asRole(test, 'client-admin');
 
   test('SNTS-242: development guide modal is titled Pre-start Development Guide', async ({ page }, testInfo) => {
-    await page.goto('/');
+    await gotoApp(page, '/');
     await page.getByRole('button', { name: 'New Observation', exact: true }).click();
     await expect(page).toHaveURL(/[?&]view=prestart-observation(?:&|$)/);
     await expect(page.getByRole('heading', {
@@ -43,7 +44,7 @@ test.describe('Pre-start Observation guide layout on mobile', () => {
 
   test('SNTS-167: development guide header fits on mobile without Close overlap', async ({ page }, testInfo) => {
     test.setTimeout(60000);
-    await page.goto('/');
+    await gotoApp(page, '/');
     // The mobile menu has no accessible name; it is the homepage's only unnamed button.
     const menu = page.getByRole('button', { name: '', exact: true });
     await expect(menu).toHaveCount(1);
@@ -74,7 +75,7 @@ test.describe('Pre-start Observation guide layout on mobile', () => {
         if (await dialog.isVisible()) await page.keyboard.press('Escape');
         await expect(dialog).toBeHidden();
       } finally {
-        await page.goto(initialUrl);
+        await gotoApp(page, initialUrl);
         await expect(page).toHaveURL(initialUrl);
         await expect(sidebar).toBeHidden();
         await expect(menu).toHaveCount(1);

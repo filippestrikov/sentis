@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./support/navigation');
 const { asRole } = require('./support/roles');
 const { knownOrganization } = require('./fixtures/super-admin.json');
 
@@ -15,7 +16,7 @@ test.describe('Super Admin SAM AI', () => {
     let initialOrganization;
 
     try {
-      await page.goto('/?admin=super');
+      await gotoApp(page, '/?admin=super');
       await expect(page.getByRole('heading', {
         name: 'Sentis Super Admin Dashboard', exact: true,
       })).toBeVisible();
@@ -72,7 +73,7 @@ test.describe('Super Admin SAM AI', () => {
         crashedOrganizations.push(organization);
         await testInfo.attach(`SAM AI crash: ${organization}`, { body: await page.screenshot(), contentType: 'image/png' });
         // Recover so the remaining organizations are still checked; selection resets to the default on reload.
-        await page.goto('/?admin=super&tab=cortex');
+        await gotoApp(page, '/?admin=super&tab=cortex');
         await expect(page.getByRole('heading', { name: 'Usage Trend', exact: true })).toBeVisible({ timeout: 20000 });
         organizationSelector = page.getByRole('combobox').filter({ hasText: exactText(initialOrganization) });
         await expect(organizationSelector).toHaveCount(1, { timeout: 20000 });
@@ -122,7 +123,7 @@ test.describe('Super Admin SAM AI', () => {
         const current = crashed ? null : await page.getByRole('combobox').first().textContent();
         if (crashed || current !== initialOrganization) {
           if (crashed) {
-            await page.goto('/?admin=super&tab=cortex');
+            await gotoApp(page, '/?admin=super&tab=cortex');
           } else {
             await page.getByRole('combobox').filter({ hasText: exactText(current) }).click();
             await page.getByRole('listbox').getByRole('option', { name: initialOrganization, exact: true }).click();
