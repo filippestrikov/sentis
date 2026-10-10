@@ -27,7 +27,7 @@ corrected expected behavior; if the defect is present the test fails, and that f
 ## Tests
 
 - Tag tests that need no session with `{ tag: '@public' }`; the `public` project runs them without login setup.
-- Failed/timed-out test evidence is preserved in `Sentis-evidence` beside the main repo (override with `SENTIS_EVIDENCE_DIR`). Screenshots and masked summaries are preserved; traces and videos are preserved only for `public`. Nothing from `setup` or `.auth/` is copied.
+- Failed/timed-out test evidence is preserved in `Sentis-evidence` beside the main repo (override with `SENTIS_EVIDENCE_DIR`), one new timestamped folder per failure under its Jira ID. What is kept follows "Evidence and screenshot privacy" below; the per-test strategy is in `docs/automation/evidence-strategy.md`.
 - Mobile tests use Chromium device emulation and do not represent iOS Safari. Opt-in `public-webkit` runs only with `SENTIS_WEBKIT=1`. WebKit emulation is closer to Safari's engine but is still not a real iPhone. Authenticated projects do not use WebKit yet.
 - One `test()` per Jira issue scenario. The title starts with the key: `'SNTS-123: saving a profile keeps the new name'`.
 - One spec per functional area: `tests/<area>.spec.js`. Expected copy lives in `tests/fixtures/<area>.json`.
@@ -78,7 +78,33 @@ not sanitize arbitrary logs or all possible assertion errors. Blob/JSON reporter
 Failed setup clears and verifies credential inputs before Playwright's failure page
 snapshot; if clearing fails it navigates to a blank page. Trace/screenshot settings
 alone do not prevent `error-context.md` from retaining typed values.
-Never share `playwright-report/` or `test-results/` from signed-in runs without checking them for sensitive data. Traces are retained only for `public`; `setup` disables screenshots as well. Evidence folders follow the reporter's rule: masked summaries and screenshots, traces/videos only for `public`, and nothing from `setup` or `.auth/`.
+Never share `playwright-report/` or `test-results/` from signed-in runs without checking them for sensitive data. Traces are retained only for `public`; `setup` disables screenshots as well.
+
+### Evidence and screenshot privacy
+
+Staging pages show real people. A visual mask once matched nothing and an evidence screenshot kept
+account names and emails (2026-10-10, SNTS-204). Text scanners cannot read images, so images are
+controlled by policy, not by scanning.
+
+- Default: do not capture or retain screenshots of signed-in pages that show user names, email
+  addresses, personal information, account details or other sensitive data (Manage, Inspect Users,
+  User Details, Audit Logs, Prompt History, observation lists). Automatic failure screenshots are off
+  for signed-in projects.
+- Do not rely on a visual mask that nobody has verified on an actual capture.
+- Prefer non-sensitive assertions and structured evidence: geometry (widths, boundaries, expected and
+  actual edges), selector descriptions and minimal diagnostic metadata. Attach it as JSON named
+  `evidence: <what>`; the evidence reporter keeps only allowlisted fields
+  (`tests/support/evidence-policy.js`) and writes them as `<slug>.json`.
+- Screenshots of public pages without sensitive data are allowed.
+- A signed-in screenshot is retained only when the capture has been reviewed by eye and proven safe:
+  its case ID is in `reviewedScreenshotCases` and the attachment name starts with `reviewed:`.
+  Adding a case to that list needs lead review of a real capture. Re-review when the page changes.
+- Never save full signed-in traces, storage state, session cookies or request/response bodies.
+- Never put secrets or personal data in test names, step titles, assertion messages, console output,
+  reports or evidence. Identify regions by section heading or control name, never by row content.
+- Open every new evidence image you retain before reporting it.
+- `npm run security:evidence-check` (synthetic personal data, offline) must pass after any change to
+  reporters, evidence handling, screenshots, traces or authentication.
 
 ## Git
 
