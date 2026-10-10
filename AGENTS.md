@@ -63,6 +63,18 @@ corrected expected behavior; if the defect is present the test fails, and that f
 ### Sensitive data
 
 Step titles are masked by `tests/support/mask-reporter.js`, so keep it first in the reporter list.
+Run `npm run security:leak-check` before every PR and `node scripts/check-artifact-leaks.js`
+after any run with real credentials. The config rejects CLI reporter overrides unless
+`./tests/support/mask-reporter.js` is first (for example,
+`--reporter=./tests/support/mask-reporter.js,list`).
+The configured list, HTML, JUnit and evidence reporters are checked by the synthetic
+setup regression and the real-credential artifact scan. JUnit writes failure messages
+and stdout/stderr rather than step titles; scanning covers these too. Step masking does
+not sanitize arbitrary logs or all possible assertion errors. Blob/JSON reporters and
+`--ui` are not covered: do not use them with real credentials.
+Failed setup clears and verifies credential inputs before Playwright's failure page
+snapshot; if clearing fails it navigates to a blank page. Trace/screenshot settings
+alone do not prevent `error-context.md` from retaining typed values.
 Never share `playwright-report/` or `test-results/` from signed-in runs without checking them for sensitive data. Traces are retained only for `public`; `setup` disables screenshots as well. Evidence folders follow the reporter's rule: masked summaries and screenshots, traces/videos only for `public`, and nothing from `setup` or `.auth/`.
 
 ## Git

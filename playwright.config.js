@@ -11,6 +11,18 @@ if (fs.existsSync(envFile)) {
   }
 }
 
+for (let i = 2; i < process.argv.length; i++) {
+  const arg = process.argv[i];
+  if (arg === '--reporter' || arg === '-r' || arg.startsWith('--reporter=') || arg.startsWith('-r=') || /^-r[^-]/.test(arg)) {
+    const value = arg.includes('=') ? arg.slice(arg.indexOf('=') + 1)
+      : arg.startsWith('-r') && arg.length > 2 ? arg.slice(2) : process.argv[++i];
+    const first = value?.split(',')[0].replace(/\\/g, '/');
+    if (first !== './tests/support/mask-reporter.js' && first !== 'tests/support/mask-reporter.js') {
+      throw new Error('Reporter override must put mask-reporter.js first to protect credentials. Use --reporter=./tests/support/mask-reporter.js,list');
+    }
+  }
+}
+
 module.exports = defineConfig({
   testDir: './tests',
   forbidOnly: Boolean(process.env.CI),
