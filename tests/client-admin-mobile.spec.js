@@ -1,6 +1,7 @@
 const { test, expect, devices } = require('@playwright/test');
 const { gotoApp } = require('./support/navigation');
 const { asRole } = require('./support/roles');
+const { expectDialogLayout } = require('./support/layout');
 
 const { defaultBrowserType, ...iPhone } = devices['iPhone 15 Pro Max'];
 
@@ -145,4 +146,84 @@ test.describe('Client Admin on mobile Chromium', () => {
       await scrollOwner.dispose();
     }
   });
+
+});
+
+test.describe('SNTS-183 masked failure evidence', () => {
+  test.use(iPhone);
+  asRole(test, 'client-admin');
+  test('SNTS-183: user invitation dialog fits on mobile with every control reachable', async ({ page }, testInfo) => {
+    // Include tables hidden by dialogs in both explicit attachments and Playwright's automatic failure capture.
+    const capture = page.screenshot.bind(page);
+    page.screenshot = (options = {}) => capture({ ...options, mask: [page.getByRole('table', { includeHidden: true })] });
+    await gotoApp(page, '/?admin=client&tab=modules');
+    const navigation = page.getByRole('navigation', { name: 'Admin sections', exact: true });
+    await expect(navigation).toBeVisible();
+    const initialUrl = page.url();
+    const dialog = page.getByRole('dialog', { name: 'Invite Tenant User', exact: true });
+    const screenshot = async label => testInfo.attach(label, {
+      body: await page.screenshot({ mask: [page.getByRole('table', { includeHidden: true })] }),
+      contentType: 'image/png',
+    });
+    try {
+      await navigation.getByRole('button', { name: 'Inspect Users', exact: true }).click();
+      await expect(page.getByRole('button', { name: 'Invite Team Leader', exact: true })).toBeVisible();
+      // Read-only discovery found only Invite Team Leader; discover again to include future invite entry points.
+      const invitations = page.getByRole('button', { name: /^Invite\b/ });
+      const names = [];
+      for (const button of await invitations.all()) {
+        if (await button.isVisible()) {
+          const snapshot = await button.ariaSnapshot();
+          names.push(snapshot.match(/^- button "([^"]+)"/)[1]);
+        }
+      }
+      await testInfo.attach('Invitation entry points', {
+        body: JSON.stringify(names), contentType: 'application/json',
+      });
+      for (const name of names) {
+        await page.getByRole('button', { name, exact: true }).click();
+        await expect(dialog).toBeVisible();
+        try {
+          const errorsBefore = testInfo.errors.length;
+          await expectDialogLayout(page, dialog, {
+            heading: dialog.getByRole('heading', { name: 'Invite Tenant User', exact: true }),
+            label: 'Invite Tenant User',
+          });
+          for (const role of ['textbox', 'combobox', 'button']) {
+            for (const control of await dialog.getByRole(role).all()) {
+              if (!(await control.isVisible())) continue;
+              // Only the accessible name is extracted; textbox values and selected option values are never labels.
+              const snapshot = await control.ariaSnapshot();
+              const accessibleName = snapshot.match(/^- \w+ "([^"]*)"/)?.[1] || 'unnamed ' + role;
+              await control.scrollIntoViewIfNeeded();
+              await expect.soft(control, 'Invite Tenant User: ' + accessibleName + ' is reachable').toBeInViewport();
+              const box = await control.boundingBox();
+              const container = await dialog.boundingBox();
+              expect.soft(Boolean(box && container && box.x >= container.x
+                && box.x + box.width <= container.x + container.width
+                && box.x >= 0 && box.x + box.width <= page.viewportSize().width),
+              'Invite Tenant User: ' + accessibleName + ' horizontal bounds').toBe(true);
+            }
+          }
+          if (testInfo.errors.length > errorsBefore) await screenshot('Invite Tenant User layout failure');
+        } finally {
+          if (await dialog.isVisible()) await page.keyboard.press('Escape');
+          await expect(dialog).toBeHidden();
+        }
+      }
+    } catch (error) {
+      if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) await screenshot('Inspect Users failure');
+      throw error;
+    } finally {
+      try {
+        if (await dialog.isVisible()) await page.keyboard.press('Escape');
+        await expect(dialog).toBeHidden();
+      } finally {
+        await gotoApp(page, initialUrl);
+        await expect(page).toHaveURL(initialUrl);
+        await expect(navigation).toBeVisible();
+      }
+    }
+  });
+
 });

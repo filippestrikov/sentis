@@ -1,1 +1,4 @@
-{"knownOrganization": "Example Customer Org"}
+{
+  "knownOrganization": "Example Customer Org",
+  "aiDataOrganization": "Sentis"
+}
