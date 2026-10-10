@@ -3,7 +3,7 @@ const { test, expect, devices } = require('@playwright/test');
 const { defaultBrowserType, ...iPhone } = devices['iPhone 15 Pro Max'];
 test.use(iPhone);
 
-test('SNTS-156: Super Admin login popup fits and is aligned on mobile', async ({ page }) => {
+test('SNTS-156: Super Admin login popup fits and is aligned on mobile', { tag: '@public' }, async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', {
     name: 'Welcome to Sentis Applied Minds', exact: true,

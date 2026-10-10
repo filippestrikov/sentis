@@ -19,6 +19,7 @@ module.exports = defineConfig({
   reporter: [
     ['list'],
     ['html', { open: 'never' }],
+    ['./tests/support/evidence-reporter.js'],
     ...(process.env.CI ? [['junit', { outputFile: 'test-results/junit.xml' }]] : []),
   ],
   use: {
@@ -30,7 +31,13 @@ module.exports = defineConfig({
     // Signs each configured role in once and saves its session under .auth/.
     { name: 'setup', testMatch: /auth\.setup\.js$/ },
     {
+      name: 'public',
+      grep: /@public/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
       name: 'chromium',
+      grepInvert: /@public/,
       dependencies: ['setup'],
       use: { ...devices['Desktop Chrome'] },
     },

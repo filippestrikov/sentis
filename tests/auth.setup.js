@@ -24,8 +24,17 @@ for (const [role, { superAdminPortal }] of Object.entries(roles)) {
       await page.getByRole('button', { name: 'Sign In' }).click();
     }
 
-    // Post-login landing pages are not documented yet; leaving the sign-in form is the success signal.
-    await expect(page.getByRole('button', { name: 'Sign In' })).toBeHidden();
+    if (superAdminPortal) {
+      await expect(page).toHaveURL(/[?&]admin=super/);
+      await expect(page.getByRole('heading', {
+        name: 'Sentis Super Admin Dashboard', exact: true, level: 1,
+      })).toBeVisible();
+    } else {
+      await expect(page.getByRole('button', { name: 'Log Out', exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', {
+        name: 'Welcome to Sentis Applied Minds', exact: true,
+      })).toBeHidden();
+    }
     await page.context().storageState({ path: storageStatePath(role) });
   });
 }
