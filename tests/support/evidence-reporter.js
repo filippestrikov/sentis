@@ -94,7 +94,8 @@ class EvidenceReporter {
         status: result.status,
         duration: result.duration,
         retry: result.retry,
-        error: error ? this.mask(error.message || error.value || '') : null,
+        // Strip terminal colour codes so the summary reads cleanly.
+        error: error ? this.mask(error.message || error.value || '').replace(/\u001b\[[0-9;]*m/g, '') : null,
         location: location ? {
           file: this.mask(location.file), line: location.line, column: location.column,
         } : null,

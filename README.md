@@ -24,11 +24,13 @@ npx playwright show-report
 Roles without credentials are skipped, and so are the tests that need them.
 
 Failure screenshots and masked summaries are preserved under `E:\Codex\Sentis-evidence`
-in this checkout layout (`<YYYY-MM-DD>/<case id>/<HHMMSS>-<project>/`). The default
+in this checkout layout (`<YYYY-MM-DD>/<case id>/<HHMMSS>-<project>/`, UTC). The default
 is beside the main repo, including when running from an agent worktree; set
 `SENTIS_EVIDENCE_DIR` to override it (relative paths resolve from the repo root).
 Only the `public` project's traces and videos are preserved. The `setup` project
-and `.auth/` are never copied.
+and `.auth/` are never copied. A command-line `--reporter` replaces the configured
+reporters and turns evidence preservation off; omit it, or pass
+`--reporter=list,./tests/support/evidence-reporter.js`.
 
 ## Tracking
 
