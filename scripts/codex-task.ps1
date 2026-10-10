@@ -1,11 +1,15 @@
 # Dispatches one SNTS task packet to Codex in its own worktree.
-# Usage: powershell -NoProfile -File scripts/codex-task.ps1 -Slug snts-123-profile-save -Task "<task packet>" [-Base main]
+# Usage: powershell -NoProfile -File scripts/codex-task.ps1 -Slug snts-123-profile-save -TaskFile packet.txt [-Base main]
+# Multi-line packets go through -TaskFile: native command lines mangle quoted newlines.
 param(
     [Parameter(Mandatory)] [string] $Slug,
-    [Parameter(Mandatory)] [string] $Task,
+    [string] $Task = '',
+    [string] $TaskFile = '',
     [string] $Base = 'main'
 )
 $ErrorActionPreference = 'Stop'
+if ($TaskFile) { $Task = Get-Content -Raw -Encoding UTF8 $TaskFile }
+if (-not $Task) { throw 'Pass -Task or -TaskFile.' }
 $repo = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $worktree = Join-Path (Split-Path $repo) 'Sentis-worktrees\codex'
 $branch = "codex/$Slug"
