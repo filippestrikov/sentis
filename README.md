@@ -31,8 +31,53 @@ is beside the main repo, including when running from an agent worktree; set
 `SENTIS_EVIDENCE_DIR` to override it (relative paths resolve from the repo root).
 Only the `public` project's traces and videos are preserved. The `setup` project
 and `.auth/` are never copied. A command-line `--reporter` replaces the configured
-reporters and turns evidence preservation off; omit it, or pass
-`--reporter=list,./tests/support/evidence-reporter.js`.
+reporters; the config rejects overrides unless the mask reporter is first. For example,
+`--reporter=./tests/support/mask-reporter.js,list` (add the evidence reporter to preserve evidence).
+
+## Credential leak checks
+
+```sh
+npm run security:leak-check                 # run before every PR
+node scripts/check-artifact-leaks.js        # scan after any run with real credentials
+node scripts/check-artifact-leaks.js --self-test
+```
+
+The regression gate sends two failed sign-in attempts to staging using random,
+nonexistent `example.invalid` addresses. It uses the real setup project and configured
+mask, list, HTML, evidence and JUnit reporters, disables retries, and verifies both
+credential pairs were typed and submitted. Shell marker credentials override `.env`;
+other credential variables are blanked. Existing `.auth/` sessions are backed up and
+restored in `finally`. The runner captures and scans console output rather than printing it.
+Evidence goes to a temporary directory, whose path appears in the scan output.
+Reports in `playwright-report/` and `test-results/` are replaced by this run.
+
+Failed setup clears credential inputs and verifies they are empty before Playwright
+1.55.1 creates `error-context.md`. If clearing fails, cleanup navigates to a blank page.
+Tracing and screenshots being off does not disable the page snapshot. Login assertions
+are unchanged; cleanup runs only after failure.
+
+On Playwright 1.55.1, putting HTML before mask still yielded no leaks: HTML serializes
+the shared, already-masked step objects at the end of the run. Omitting mask instead
+produced four marker hits in the HTML embedded ZIP and made the gate exit 1. Keep mask
+first for reporters that consume step titles immediately and for future versions.
+
+The scanner uses Node built-ins, scans every artifact file (including binary files),
+decompresses ZIP central-directory entries and the HTML report's embedded ZIP, and
+checks raw, URL-encoded and JSON-escaped secret values. It reads `.env` with the same
+parser as the config without overriding shell values. Normal scans use nonempty env
+variables containing EMAIL, PASSWORD or TOKEN; `--marker-only` uses only
+`SENTIS_LEAKCHECK_*`. Hits print variable names and paths only. Exit codes are 0 for
+no hits, 1 for leaks, and 2 for unreadable inputs (including unsupported/corrupt ZIPs).
+Missing directories are reported as skipped. The self-test is a positive control for
+plain, JSON-escaped and deflated ZIP-entry leaks.
+
+These checks cover the configured list, HTML, JUnit and evidence reporters on the
+verified workflows. JUnit serializes failure messages and stdout/stderr, not step
+titles; those artifacts are scanned too. The mask reporter redacts step titles, not
+arbitrary logging or every possible error message. Blob/JSON reporters and `--ui`
+are not covered; do not use them with real credentials. The scanner cannot detect
+text rendered as pixels in screenshots or prove safety for secret values it was not
+given. Scan artifacts before sharing them.
 
 ## Tracking
 

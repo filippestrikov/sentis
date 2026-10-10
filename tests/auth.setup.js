@@ -1,6 +1,23 @@
 const { test: setup, expect } = require('@playwright/test');
 const { roles, credentials, storageStatePath } = require('./support/roles');
 
+setup.afterEach(async ({ page }, testInfo) => {
+  if (testInfo.status === testInfo.expectedStatus) return;
+  // Playwright snapshots failed pages during context teardown, even with traces off.
+  try {
+    for (const name of ['Email', 'Password', 'admin@sentis.com', '••••••••']) {
+      const input = page.getByRole('textbox', { name, exact: true });
+      if (await input.count()) {
+        await input.fill('', { timeout: 2000 });
+        await expect(input).toHaveValue('');
+      }
+    }
+  } catch {
+    // A broken/disabled sign-in form must not leave secrets in the failure snapshot.
+    await page.goto('about:blank');
+  }
+});
+
 for (const [role, { superAdminPortal }] of Object.entries(roles)) {
   setup(`sign in as ${role}`, async ({ page }) => {
     const { email, password, missing } = credentials(role);
