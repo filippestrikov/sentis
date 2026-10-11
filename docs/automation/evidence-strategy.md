@@ -21,6 +21,7 @@ counts. Failures are written to `Sentis-evidence/<UTC date>/<Jira ID>/<time>-<pr
 | SNTS-183 invite dialog on mobile | chromium (iPhone) | Users table behind the dialog | Reviewed open-dialog screenshot | Reviewed: users table masked (verified). The catch-path "Inspect Users failure" capture is withheld (not reviewed) |
 | SNTS-176 custom range calendar on mobile | chromium (iPhone) | Client admin dashboard counts | Reviewed screenshot | Reviewed: calendar over dashboard counts |
 | SNTS-197 Log Out in mobile sidebar | chromium (iPhone) | Sidebar (not reviewed) | Summary only | Withheld |
+| SNTS-161 sidebar Close contrast in dark theme | chromium (iPhone 15 Pro Max emulation) | Signed-in homepage and sidebar (not reviewed) | `contrast.json`: Close control, kind, threshold, colours, computed/pixel ratios, verdict and method; first inconclusive reason in `actual` | None retained; helper measures only the Close icon in memory |
 | SNTS-182 tab switch scroll position | chromium (iPhone) | Client admin content (not reviewed) | Summary only | Withheld |
 | SNTS-242 development guide title | chromium | Pre-start observation form, guide dialog | Reviewed screenshot | Reviewed: form and guide, no people |
 | SNTS-167 guide header on mobile | chromium (iPhone) | Same page as SNTS-242 | Reviewed screenshot | Reviewed with SNTS-242 |
