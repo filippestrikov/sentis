@@ -30,7 +30,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
@@ -63,12 +63,12 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Run staging regression
-        run: npx playwright test --workers=1
+        run: npx playwright test --workers=1 --retries=0
       - name: Scan artifacts for credential leaks
         id: leak_scan
         if: always()
@@ -79,6 +79,11 @@ jobs:
           python3 - <<'PY'
           import os
           import xml.etree.ElementTree as ET
+
+          if not os.path.exists('test-results/junit.xml'):
+              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+                  summary.write('junit.xml not produced (see job log)\n')
+              raise SystemExit(0)
 
           counts = ET.parse('test-results/junit.xml').getroot().attrib
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:

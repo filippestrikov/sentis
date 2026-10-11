@@ -78,6 +78,11 @@ Use a merge commit or a rebase merge, not squash. Squashing PR 1 rewrites histor
 
 The workflow exists in `.github/workflows/qa.yml`, and its staging job is manual-only. It must:
 
+- Actions are pinned by major version; pinning to commit SHAs is recommended before enabling unattended runs.
+- The validate job's leak-check loads the public staging sign-in page with synthetic `example.invalid` credentials
+  (network access, no secrets). Configure the `staging-qa` environment with required reviewers and the four
+  `SENTIS_*` secrets before the first manual run.
+
 1. **Secrets:** read `SENTIS_*` credentials from repository secrets only, never from files. Use separate
    least-privilege QA accounts where possible. Never echo the environment.
 2. **Run order:** `npm ci`, then `node --check` on all JS, then `npm run test:list`, then
