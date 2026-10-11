@@ -54,19 +54,39 @@ Last 7 Days, and Custom is currently broken (SNTS-138/176).
 | SNTS-136: pagination | **≥ 21 in total within the last 12 months**, all in QA-Automation | Spread over the last 6 months |
 | SNTS-117 | ≥ 1 submitted **by** the QA client admin | Any recent date. "My Observations" lists the signed-in user's own observations |
 
-**Open point for the data owner:** do the dashboard date filters use the meeting date or the submitted date?
-Current staging shows observations submitted in 2026 with meeting dates in 1994 and 1997, and the filters hide them.
-Set both dates inside the window to be safe.
+**Date definition (verified read-only 2026-10-11; strong inference, not confirmed by the developers):** the dashboard
+date filters very likely use the **meeting date** (`meetingDate`), not the submitted date (`submittedAt`).
+
+- Both admin lists request one window, `?dateFrom=YYYY-MM-DD&dateTo=YYYY-MM-DD`:
+  - client admin: `/v1/reporting/tenant-summary`;
+  - super admin: `/v1/reporting/organizations/:id/prestart-report`.
+- Evidence: the client admin belongs to one organization. Its own 2 observations (`/v1/prestart-observations/me`)
+  were submitted in 2026, with meeting dates in 2020 and 1994. The organization's "Year" window
+  (`dateFrom` one year ago) still shows "No observations".
+- Seeding rule: put **both** the meeting date and the submitted date inside the target window. Ask the developers to
+  confirm which field the filter uses.
 
 ## 4. Pagination sizing (SNTS-136)
 
-- The page size has **not** been measured. With today's data, Recent Observations (Super Admin → PST Reports)
-  shows one page and no pagination controls. Earlier notes assumed 10 rows per page.
-- Requirement: the count in the selected range must be at least 2 × page size + 1. That gives at least three pages,
-  so Next, Previous and the page indicator can all be checked. With 10 rows per page, 21 is the minimum; 25 gives
-  margin.
-- The Batch 5 test will read the page size at run time, from the first page's row count. It skips with "needs
-  ≥ 2×page size + 1 observations in QA-Automation" if there are too few, rather than hard-coding 10.
+- **Page size: 10 rows** for Super Admin → PST Reports → "Recent Observations - {organization}". This comes from
+  static reading of the deployed staging bundle (`index-BDcNUbZY.js`, 2026-10-11): the page count is
+  `ceil(rows / 10)`, and the page slice is `rows.slice((page-1)*10, page*10)`.
+- The other observation lists in the bundle also use 10. The UI could not show it, because no organization has
+  more than one page today.
+- Pagination is **client-side**. `prestart-report` returns every observation in the window in one array, with no
+  page parameters. The test therefore needs the rows to exist in the window; no server paging is involved.
+- Requirement: at least 2 × page size + 1 rows in the selected window, which gives 3 pages, so Next, Previous and
+  the page indicator can all be checked. **21 is the minimum; 25 gives margin.**
+- The test still reads the page size at run time, from the first page's row count, because the bundle can change.
+  It skips with "needs ≥ 2×page size + 1 observations in QA-Automation" if there are too few.
+
+## 4a. Role access (verified 2026-10-11)
+
+| View | Role | Scope |
+|---|---|---|
+| Client Admin → Pre-Start Observation (`?admin=client&tab=observations`) | Client admin of the organization | That organization's observations in the date window. View opens the "Observation for …" popup (SNTS-180) |
+| Home → My Observations | Any signed-in user | Only the user's own submissions (`/me`). View opens "Observation Details" (SNTS-117) |
+| Super Admin → PST Reports → Recent Observations | Super admin | Any organization, chosen in the organization selector. The selection is not persisted (a reload resets it) |
 - The `QA Site NN` locations make each page's rows distinguishable without reading any personal data.
 
 ## 5. Rules
@@ -77,6 +97,21 @@ Set both dates inside the window to be safe.
   owner does it. Tell us if a refresh is not possible, and the test will use the "Month" range instead.
 - Clean-up and retention are owned by the data owner. Tell us before the org is removed, so the tests can be marked
   `blocked` rather than failing.
+
+**Safe creation strategy (recommended order):**
+
+1. The super admin creates the `QA-Automation` organization (Manage → Create Organisation). This is a cross-company
+   action, so it needs the QA owner's approval. Approved domains: none, so no emails are sent.
+2. Create the QA client-admin account without inviting a real mailbox, for example a QA-controlled address, or
+   the developers seed it directly.
+3. Observations: the preferred option is a **developer seed script** run against staging. It can set
+   `meetingDate` and `submittedAt` explicitly, which the UI cannot. The fallback is for the QA client admin to
+   submit them through New Observation, which sets `submittedAt` to now and the meeting date as entered.
+4. Tag every free-text field `QA fixture NN`, so the records are identifiable and safe to delete.
+
+**Clean-up:** delete the QA organization, which removes its observations and accounts, or delete the records whose
+location is `QA Site NN` or whose comment is `QA fixture NN`. Never delete by date or by organization name pattern
+alone.
 
 ## 6. Verification once seeded (lead, read-only)
 
