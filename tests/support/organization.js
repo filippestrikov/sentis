@@ -19,13 +19,14 @@ async function restoreOrganization({ role, testInfo, expected, restore, current 
   let actual;
   try {
     await restore();
-    actual = await current();
-    if (actual === expected) return actual;
+    actual = String((await current()) ?? '').trim();
+    if (typeof expected === 'string' && expected.trim() !== ''
+      && actual === String(expected ?? '').trim()) return actual;
   } catch { /* Persist only minimal metadata, never the underlying page error. */ }
   const flag = unsafeFlag(role);
   fs.mkdirSync(path.dirname(flag), { recursive: true });
   fs.writeFileSync(flag, JSON.stringify({
-    test: testInfo.title, expected, actual: actual || null, at: new Date().toISOString(),
+    test: testInfo.title, expected, actual: actual ?? null, at: new Date().toISOString(),
   }, null, 2));
   throw new Error(`ENVIRONMENT SAFETY INCIDENT: organization not restored for "${role}" (expected ${expected}, got ${actual}). Further ${role} tests are blocked.`);
 }

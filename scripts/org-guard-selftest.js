@@ -19,8 +19,23 @@ async function main() {
   assert.equal(fs.existsSync(flag), false);
   console.log('PASS successful restore returns the organization and writes no flag');
 
+  assert.equal(await restoreOrganization({ ...options,
+    restore: async () => {}, current: async () => '  Example Customer Org\n',
+  }), 'Example Customer Org');
+  assert.equal(fs.existsSync(flag), false);
+  console.log('PASS whitespace around the restored organization is trimmed and writes no flag');
+
+  await assert.rejects(restoreOrganization({ ...options, expected: '',
+    restore: async () => {}, current: async () => '',
+  }), /ENVIRONMENT SAFETY INCIDENT/);
+  const emptyExpectedData = JSON.parse(fs.readFileSync(flag, 'utf8'));
+  assert.equal(emptyExpectedData.expected, '');
+  assert.equal(emptyExpectedData.actual, '');
+  console.log('PASS empty expected organization writes a flag and throws INCIDENT');
+  fs.unlinkSync(flag);
+
   await assert.rejects(restoreOrganization({ ...options,
-    restore: async () => {}, current: async () => 'Sentis',
+    restore: async () => {}, current: async () => '  Sentis\n',
   }), /ENVIRONMENT SAFETY INCIDENT.*expected Example Customer Org, got Sentis/);
   const data = JSON.parse(fs.readFileSync(flag, 'utf8'));
   assert.deepEqual(Object.keys(data).sort(), ['actual', 'at', 'expected', 'test']);
@@ -52,7 +67,7 @@ async function main() {
   fs.unlinkSync(flag);
   assert.doesNotThrow(() => assertSharedAccountUsable(role));
   console.log('PASS removing the flag unblocks the role');
-  console.log('5 cases passed');
+  console.log('7 cases passed');
 }
 
 main().catch(error => { console.error(error); process.exitCode = 1; })
