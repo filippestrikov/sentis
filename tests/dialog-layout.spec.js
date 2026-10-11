@@ -216,6 +216,116 @@ test('SNTS-117: public popups have no border crossing the Close button', { tag: 
 
 test.describe('Client admin dialog borders', () => {
   asRole(test, 'client-admin');
+  test('SNTS-117: Observation Details Close is not crossed by popup borders in dark theme', async ({ page }, testInfo) => {
+    test.setTimeout(120000);
+    const initialViewport = page.viewportSize();
+    const nonGetRequests = [];
+    const recordRequest = request => {
+      if (request.method() !== 'GET') nonGetRequests.push(request.method());
+    };
+    page.on('request', recordRequest);
+    const themeState = () => page.evaluate(() => {
+      const stored = localStorage.getItem('theme-storage');
+      return stored === null ? null : JSON.parse(stored).state;
+    });
+    const toggleTheme = page.getByRole('button', { name: 'Toggle theme', exact: true });
+    const dialog = page.getByRole('dialog', { name: 'Observation Details', exact: true });
+    const close = dialog.getByRole('button', { name: 'Close', exact: true });
+    const evidence = [];
+    const errorsBefore = testInfo.errors.length;
+    let failed = false;
+    let label = '';
+    const checkObservationBorders = async () => {
+      await settle(dialog);
+      await expect.soft(close, `${label}: Close visible`).toBeVisible();
+      const box = await close.boundingBox();
+      const contained = inside(box, await dialog.boundingBox());
+      // intersections excludes Close itself, including its required keyboard focus ring.
+      const crossings = await intersections(dialog, close, 'border');
+      evidence.push(
+        { label, control: 'Close', boundary: 'dialog', ...box, expected: true, actual: contained },
+        { label, control: 'Close', boundary: 'border', ...box, expected: 0, actual: crossings.length },
+        ...crossings.map(rect => ({ label, control: 'Close', ...rect, expected: 0, actual: crossings.length })),
+      );
+      expect.soft(contained, `${label}: Close fully inside dialog`).toBe(true);
+      expect.soft(crossings.length, `${label}: no visible border crosses Close`).toBe(0);
+    };
+    try {
+      await gotoApp(page, '/');
+      await expect(toggleTheme).toBeVisible();
+      for (const viewport of sizes) {
+        await page.setViewportSize(viewport);
+        expect(page.viewportSize()).toEqual(viewport);
+        if ((await themeState())?.theme !== 'dark') await toggleTheme.click();
+        await expect.poll(themeState).toMatchObject({ theme: 'dark' });
+        await page.getByRole('button', { name: 'My Observations', exact: true }).click();
+        await expect(page).toHaveURL(/[?&]view=/);
+        await expect(page.getByRole('table')).toBeVisible();
+        // Approved selector exception: each observation row's View icon button is unnamed.
+        const row = page.getByRole('row').filter({ has: page.getByRole('button') }).first();
+        test.skip(await row.count() === 0,
+          'Missing fixture: no My Observations row for the client admin (see QA_ORG_FIXTURE_SPEC.md)');
+        label = `${viewport.width}x${viewport.height} mouse`;
+        await row.getByRole('button').click();
+        await expect(dialog).toBeVisible();
+        await checkObservationBorders();
+        const unfocused = await close.evaluate(element => {
+          const style = getComputedStyle(element);
+          return { shadow: style.boxShadow, outline: `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}` };
+        });
+        label = `${viewport.width}x${viewport.height} keyboard`;
+        for (let tabs = 0; tabs < 20; tabs++) {
+          await page.keyboard.press('Tab');
+          if (await close.evaluate(element => document.activeElement === element)) break;
+        }
+        const focus = await close.evaluate((element, before) => {
+          const style = getComputedStyle(element);
+          const outline = `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}`;
+          return {
+            focused: document.activeElement === element,
+            visible: element.matches(':focus-visible'),
+            indicator: (style.boxShadow !== 'none' && style.boxShadow !== before.shadow)
+              || (!['none', 'hidden'].includes(style.outlineStyle) && parseFloat(style.outlineWidth) > 0
+                && outline !== before.outline),
+          };
+        }, unfocused);
+        const box = await close.boundingBox();
+        for (const [boundary, actual] of Object.entries(focus)) {
+          evidence.push({ label, control: 'Close', boundary, ...box, expected: true, actual });
+          expect.soft(actual, `${label}: ${boundary}`).toBe(true);
+        }
+        await checkObservationBorders();
+        await close.click();
+        await expect(dialog).toBeHidden();
+      }
+    } catch (error) {
+      failed = testInfo.expectedStatus !== 'skipped';
+      throw error;
+    } finally {
+      try {
+        try {
+          if (await dialog.isVisible()) await close.click();
+          await expect(dialog).toBeHidden();
+        } finally {
+          try {
+            if ((await themeState())?.theme === 'dark') await toggleTheme.click();
+            await expect.poll(themeState).toMatchObject({ theme: 'light' });
+          } finally {
+            await page.setViewportSize(initialViewport);
+            expect(page.viewportSize()).toEqual(initialViewport);
+            page.off('request', recordRequest);
+            expect(nonGetRequests, 'Non-GET request methods').toEqual([]);
+          }
+        }
+      } catch (error) {
+        failed = true;
+        throw error;
+      } finally {
+        if (failed || testInfo.errors.length > errorsBefore) await attach(testInfo, 'observation close',
+          evidence.length ? evidence : [{ label, control: 'Close', boundary: 'workflow', expected: true, actual: false }]);
+      }
+    }
+  });
   test('SNTS-117: Invite Tenant User popup has no border crossing the Close button', async ({ page }, testInfo) => {
     test.setTimeout(120000);
     await gotoApp(page, '/?admin=client&tab=modules');

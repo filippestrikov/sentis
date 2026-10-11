@@ -1,10 +1,12 @@
 const { test, expect } = require('@playwright/test');
 const { gotoApp } = require('./support/navigation');
 const { asRole } = require('./support/roles');
+const { restoreOrganization } = require('./support/organization');
+const { knownOrganization } = require('./fixtures/super-admin.json');
 
 const exactText = text => new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
 
-async function selectContext(page, current, next, identifyingOption) {
+async function selectContext(page, current, next, identifyingOption, onSwitch = () => {}) {
   // Both dashboard comboboxes lack accessible names; identify the open control by its options.
   const control = page.getByRole('combobox').filter({ hasText: exactText(current) });
   await expect(control).toHaveCount(1);
@@ -12,21 +14,32 @@ async function selectContext(page, current, next, identifyingOption) {
   const listbox = page.getByRole('listbox');
   await expect(listbox).toBeVisible();
   await expect(listbox.getByRole('option', { name: identifyingOption, exact: true })).toBeVisible();
+  onSwitch();
   await listbox.getByRole('option', { name: next, exact: true }).click();
   await expect(listbox).toBeHidden();
   await expect(page.getByRole('combobox').filter({ hasText: exactText(next) })).toBeVisible();
 }
 
-async function restoreDashboard(page) {
+async function restoreDashboard(page, testInfo, organizationSwitchAttempted = false) {
   try {
-    await page.keyboard.press('Escape');
-    // Dashboard selections are not persisted across reloads (lead verified 2026-10-10).
-    // Reload also restores the original Manage tab if a report or picker has crashed.
-    await gotoApp(page, '/?admin=super');
-    await expect(page).toHaveURL(/\?admin=super$/);
-    await expect(page.getByRole('heading', { name: 'New Organisation', exact: true })).toBeVisible();
-    await expect(page.getByRole('combobox').filter({ hasText: /^Example Customer Org$/ })).toBeVisible({ timeout: 30000 });
-    await expect(page.getByRole('combobox').filter({ hasText: /^Month$/ })).toBeVisible();
+    const restore = async () => {
+      await page.keyboard.press('Escape');
+      // Dashboard selections are not persisted across reloads (lead verified 2026-10-10).
+      // Reload also restores the original Manage tab if a report or picker has crashed.
+      await gotoApp(page, '/?admin=super');
+      await expect(page).toHaveURL(/\?admin=super$/);
+      await expect(page.getByRole('heading', { name: 'New Organisation', exact: true })).toBeVisible();
+      await expect(page.getByRole('combobox').filter({ hasText: /^Example Customer Org$/ })).toBeVisible({ timeout: 30000 });
+      await expect(page.getByRole('combobox').filter({ hasText: /^Month$/ })).toBeVisible();
+    };
+    if (organizationSwitchAttempted) {
+      await restoreOrganization({
+        role: 'super-admin', testInfo, expected: knownOrganization, restore,
+        current: () => page.getByRole('combobox').first().textContent(),
+      });
+    } else {
+      await restore();
+    }
   } finally {
     // Manage contains account emails; prevent Playwright's automatic failure snapshot retaining them.
     await page.goto('about:blank');
@@ -71,8 +84,9 @@ test.describe('Super Admin dashboard', () => {
     }
   });
 
-  test('SNTS-221: the Overall Rating Observation icon renders correctly', async ({ page }, testInfo) => {
+  test('SNTS-221: the Overall Rating Observation icon renders correctly', { tag: '@shared-account' }, async ({ page }, testInfo) => {
     let evidenceIcons;
+    let organizationSwitchAttempted = false;
     let evidenceOrganization = 'Example Customer Org';
     await gotoApp(page, '/?admin=super');
     await expect(page.getByRole('heading', {
@@ -113,7 +127,7 @@ test.describe('Super Admin dashboard', () => {
       let hasObservations = false;
       for (const organization of ['Sentis', 'Downer']) {
         const report = page.waitForResponse(response => /\/v1\/reporting\/organizations\/[^/]+\/prestart-report/.test(response.url()));
-        await selectContext(page, currentOrganization, organization, 'Example Customer Org');
+        await selectContext(page, currentOrganization, organization, 'Example Customer Org', () => { organizationSwitchAttempted = true; });
         await report;
         await expect(page.getByRole('status').filter({ hasText: 'Updating dashboard data...' }))
           .toBeHidden({ timeout: 30000 });
@@ -156,7 +170,7 @@ test.describe('Super Admin dashboard', () => {
       });
       throw error;
     } finally {
-      await restoreDashboard(page);
+      await restoreDashboard(page, testInfo, organizationSwitchAttempted);
     }
   });
 });

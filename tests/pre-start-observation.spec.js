@@ -36,6 +36,85 @@ test.describe('Pre-start Observation', () => {
   });
 });
 
+// launchOptions is a worker fixture: extend only this test instead of changing the existing tests.
+const attachmentTest = test.extend({
+  launchOptions: {
+    args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
+  },
+});
+
+attachmentTest.describe('Pre-start Observation attachments on mobile', () => {
+  const { defaultBrowserType, ...iPhone } = devices['iPhone 15 Pro Max'];
+  attachmentTest.use({
+    ...iPhone,
+    permissions: ['camera'],
+  });
+  asRole(attachmentTest, 'client-admin');
+
+  attachmentTest('SNTS-171: a photo added to a pre-start observation can be removed before submitting', async ({ page }, testInfo) => {
+    attachmentTest.setTimeout(60000);
+    const blockedMethods = [];
+    const states = [];
+    let expectedAttachment = false;
+    // Guard against accidental persistence; use the real app without faking its data.
+    await page.route('**/*', async route => {
+      const method = route.request().method();
+      if (['GET', 'HEAD', 'OPTIONS'].includes(method)) return route.continue();
+      blockedMethods.push(method);
+      await route.abort();
+    });
+    const dialog = page.getByRole('dialog');
+    const photo = page.getByRole('button', { name: 'Photo', exact: true });
+    const addedPhoto = page.getByRole('button', { name: /^Photo\s*\(1\/5\)$/ });
+    const photos = page.getByText('Photos (1)', { exact: true });
+    try {
+      await gotoApp(page, '/?view=prestart-observation');
+      await expect(page.getByRole('heading', { name: 'Meeting Details', exact: true })).toBeVisible();
+      await expect(page.getByText('Media Attachments', { exact: true })).toBeVisible();
+      await photo.click();
+      await expect(dialog).toBeVisible();
+      // Selector exception: camera controls have no accessible names, only their Lucide SVGs.
+      const shutter = dialog.getByRole('button', { name: '', exact: true })
+        .filter({ has: page.locator('svg.lucide-camera') });
+      const close = dialog.getByRole('button', { name: '', exact: true })
+        .filter({ has: page.locator('svg.lucide-x') });
+      await expect(shutter).toHaveCount(1);
+      expectedAttachment = true;
+      await shutter.click();
+      await close.click();
+      await expect(dialog).toBeHidden();
+      await expect(addedPhoto).toBeVisible();
+      await expect(photos).toBeVisible();
+      states.push({ control: 'Photo attachment', label: 'After capture', expected: true, actual: await photos.isVisible() });
+
+      // Selector exception: the attachment remove control is unnamed. Once the camera is closed,
+      // the page has exactly one button containing lucide-x, as verified by lead discovery.
+      const remove = page.getByRole('button', { name: '', exact: true })
+        .filter({ has: page.locator('svg.lucide-x') });
+      await expect(remove).toHaveCount(1);
+      expectedAttachment = false;
+      await remove.click();
+      await expect(photos).toBeHidden();
+      await expect(photo).toBeVisible();
+      states.push({ control: 'Photo attachment', label: 'After removal', expected: false, actual: await photos.isVisible() });
+      expect(blockedMethods, 'No attempted network writes before submitting').toEqual([]);
+    } catch (error) {
+      await testInfo.attach('evidence: attachment state', {
+        body: JSON.stringify([
+          ...states,
+          { control: 'Photos (1)', label: 'At failure', expected: expectedAttachment, actual: await photos.isVisible().catch(() => false) },
+          { control: 'Photo', label: 'At failure', expected: !expectedAttachment, actual: await photo.isVisible().catch(() => false) },
+          { control: 'Network writes', expected: 0, actual: blockedMethods.length },
+        ]),
+        contentType: 'application/json',
+      });
+      throw error;
+    } finally {
+      await page.goto('about:blank');
+    }
+  });
+});
+
 const { defaultBrowserType, ...iPhone } = devices['iPhone 15 Pro Max'];
 
 test.describe('Pre-start Observation guide layout on mobile', () => {
