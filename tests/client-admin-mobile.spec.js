@@ -56,6 +56,37 @@ test.describe('Client Admin on mobile Chromium', () => {
         message: 'Log Out lies fully inside the mobile viewport',
       }).toMatchObject({ withinViewport: true });
     } catch (error) {
+      try {
+        const evidence = { control: 'Log Out' };
+        if (!(await logout.count())) {
+          evidence.actual = 'not found';
+        } else {
+          const { box, viewport, withinViewport } = await viewportBounds(page, logout);
+          Object.assign(evidence, {
+            viewportWidth: viewport.width, viewportHeight: viewport.height, withinViewport,
+          });
+          if (box) {
+            const right = box.x + box.width;
+            const bottom = box.y + box.height;
+            Object.assign(evidence, box, { right, bottom,
+              boundary: [box.x < 0 && 'left', box.y < 0 && 'top',
+                right > viewport.width && 'right', bottom > viewport.height && 'bottom']
+                .filter(Boolean).join(', ') || 'none',
+            });
+          }
+          evidence.actual = await logout.evaluate(element => {
+            for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+              if (['auto', 'scroll'].includes(getComputedStyle(parent).overflowY)
+                && parent.scrollHeight > parent.clientHeight) return 'sidebar scrolls';
+              if (parent.getAttribute('role') === 'dialog') break;
+            }
+            return 'sidebar does not scroll';
+          });
+        }
+        await testInfo.attach('evidence: log out bounds', {
+          body: JSON.stringify(evidence), contentType: 'application/json',
+        });
+      } catch { /* Evidence must not mask the original failure. */ }
       await preserveFailure(page, testInfo);
       throw error;
     } finally {
@@ -121,6 +152,16 @@ test.describe('Client Admin on mobile Chromium', () => {
       }
       return document.scrollingElement;
     });
+    const scrollEvidence = [{ tab: 'Training', expected: '>= 300' }, { tab: 'Guides', expected: 0 }];
+    let switchedToGuides = false;
+    const measureScrollEvidence = async entry => {
+      try {
+        Object.assign(entry, await scrollOwner.evaluate(element => ({
+          actual: element.scrollTop, elementHeight: element.scrollHeight,
+          height: element.clientHeight, label: element.isConnected ? 'connected' : 'replaced',
+        })));
+      } catch { /* Keep any measurements already collected. */ }
+    };
     try {
       const availableScroll = await scrollOwner.evaluate(element => element.scrollHeight - element.clientHeight);
       test.skip(availableScroll < 300, 'Missing scrollable Training content fixture (at least 300px of overflow)');
@@ -128,7 +169,9 @@ test.describe('Client Admin on mobile Chromium', () => {
       await expect.poll(() => scrollOwner.evaluate(element => element.scrollTop), {
         message: 'Training content is scrolled well down before switching sections',
       }).toBeGreaterThanOrEqual(300);
+      await measureScrollEvidence(scrollEvidence[0]);
       await guides.click();
+      switchedToGuides = true;
       await expect(page).toHaveURL(/[?&]tab=toolkits(?:&|$)/);
       await expect(panel).toBeVisible();
       // Keep observing the same scroll owner so a detached, replaced element cannot give a false zero.
@@ -137,6 +180,12 @@ test.describe('Client Admin on mobile Chromium', () => {
       })), { message: 'Guides content automatically scrolls to the top' })
         .toEqual({ connected: true, scrollTop: 0 });
     } catch (error) {
+      try {
+        await measureScrollEvidence(scrollEvidence[switchedToGuides ? 1 : 0]);
+        await testInfo.attach('evidence: scroll position', {
+          body: JSON.stringify(scrollEvidence), contentType: 'application/json',
+        });
+      } catch { /* Evidence must not mask the original failure. */ }
       if (!testInfo.annotations.some(annotation => annotation.type === 'skip')) await preserveFailure(page, testInfo);
       throw error;
     } finally {
