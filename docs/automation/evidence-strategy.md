@@ -29,6 +29,7 @@ counts. Failures are written to `Sentis-evidence/<UTC date>/<Jira ID>/<time>-<pr
 | SNTS-117 public popup borders, both desktop sizes | public | Public Terms and Super Admin sign-in dialogs | `border-crossings.json`: visible border segment geometry; summary | Public automatic failure screenshots/trace allowed |
 | SNTS-117 Invite Tenant User popup borders | chromium | Users table behind the dialog | `border-crossings.json`: control containment and border geometry; summary | None; no screenshots or traces |
 | SNTS-117 New Training Module popup borders | chromium | Training list and empty module dialog | `border-crossings.json`: control containment and border geometry; summary | None; no screenshots or traces |
+| SNTS-117 Observation Details Close in dark theme, both desktop sizes | chromium | Observation detail contains people, locations and comments | Failure only: `observation-close.json`, size and mouse/keyboard label, Close geometry, boundary, expected/actual containment, border count and focus booleans; summary | None; no screenshots or traces; no row or dialog text |
 | SNTS-251 SAM AI Coach close and draft input on mobile | chromium (iPhone) | Coach may show conversation history | `coach-controls.json`: viewport/control geometry and non-GET request count; summary | None; no screenshots or traces |
 
 Avatar initials in the header (for example "SA", "AM") are visible in reviewed captures. They were judged
