@@ -64,6 +64,10 @@ corrected expected behavior; if the defect is present the test fails, and that f
   name and clean up in `finally`. No destructive admin actions, real invitations or
   outbound email to real users without the QA owner's explicit approval for that test.
 - Super-admin tests must not change cross-company settings unless approved.
+- Organization-switching tests must carry `@shared-account` and run only in the
+  `shared-account` project (1 worker). Restore through `restoreOrganization` in `finally`.
+  A restore failure blocks every test for that role until a human restores the organization
+  and deletes `.shared-account-unsafe/<role>.json`.
 - The super-admin account belongs to a real person and is shared. Tests that change UI-level context (selected organization, filters stored per user, theme) must restore it in `finally` and assert the restore (see `tests/super-admin-sam-ai.spec.js`).
 - Tests must not change passwords, profiles or notification preferences on shared accounts.
 

@@ -52,8 +52,15 @@ module.exports = defineConfig({
     },
     {
       name: 'chromium',
-      grepInvert: /@public/,
+      grepInvert: /@public|@shared-account/,
       dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'], trace: 'off', screenshot: 'off' },
+    },
+    {
+      name: 'shared-account',
+      grep: /@shared-account/,
+      dependencies: ['setup'],
+      workers: 1,
       use: { ...devices['Desktop Chrome'], trace: 'off', screenshot: 'off' },
     },
     ...(process.env.SENTIS_WEBKIT === '1' ? [{

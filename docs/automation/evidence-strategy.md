@@ -12,9 +12,9 @@ counts. Failures are written to `Sentis-evidence/<UTC date>/<Jira ID>/<time>-<pr
 | SNTS-156 Super Admin login popup on mobile | public | Public sign-in page | Screenshot, trace, video | Allowed (public, no session) |
 | SNTS-139 role access (both scenarios) | chromium | Dashboards | Summary only | None |
 | SNTS-138 Custom date range picker | chromium | Manage tab lists accounts | Reviewed screenshot | Reviewed: Manage account card and org form masked, page blanked afterwards |
-| SNTS-221 Observation legend icon | chromium | PST Reports can list observations | `observation-icon.json`: section, company checked, control, visibility and icon dimensions; summary | Withheld: the tab panel capture is not reviewed |
-| SNTS-265 SAM AI organization switch | chromium | Crash screen; SAM AI dashboard | Reviewed crash screenshots; the switch log is not retained (not an `evidence:` attachment) | Reviewed: error screen has no data |
-| SNTS-204 sections fit mobile without overflow | chromium (iPhone) | Manage, User Details, Audit Logs and Prompt History list people | `geometry.json` (tab, section heading, widths, cut in px) | None, by design |
+| SNTS-221 Observation legend icon | shared-account | PST Reports can list observations | `observation-icon.json`: section, company checked, control, visibility and icon dimensions; summary | Withheld: the tab panel capture is not reviewed |
+| SNTS-265 SAM AI organization switch | shared-account | Crash screen; SAM AI dashboard | Reviewed crash screenshots; the switch log is not retained (not an `evidence:` attachment) | Reviewed: error screen has no data |
+| SNTS-204 sections fit mobile without overflow | shared-account (iPhone) | Manage, User Details, Audit Logs and Prompt History list people | `geometry.json` (tab, section heading, widths, cut in px) | None, by design |
 | SNTS-205 New Training Module dialog | chromium (iPhone) | Training content | Reviewed screenshot | Reviewed: dialog over the training list; no people |
 | SNTS-209 Edit Training Module dialog | chromium (iPhone) | Training content | Reviewed screenshot | Reviewed: the table mask also covers the lower half of the dialog; the defect (Close over the title) stays visible |
 | SNTS-140 invite dialog, desktop and mobile | chromium | Users table behind the dialog | Reviewed screenshot | Reviewed: users table masked (mask verified on a real capture) |

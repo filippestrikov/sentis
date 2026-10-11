@@ -3,6 +3,7 @@ playwright-report/
 test-results/
 playwright/.cache/
 .auth/
+.shared-account-unsafe/
 .env
 .env.*
 !.env.example

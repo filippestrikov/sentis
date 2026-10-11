@@ -1,4 +1,5 @@
 const path = require('path');
+const { assertSharedAccountUsable } = require('./organization');
 
 // Credentials come only from the environment; see .env.example.
 const roles = {
@@ -25,6 +26,7 @@ function asRole(test, role) {
   const state = storageStatePath(role);
   test.use({ storageState: async ({}, use) => use(fs.existsSync(state) ? state : undefined) });
   test.beforeEach(() => {
+    assertSharedAccountUsable(role);
     test.skip(!fs.existsSync(state), `No ${role} session; set ${credentials(role).missing} and run the setup project`);
   });
 }
