@@ -22,6 +22,7 @@ const structuredFields = new Set([
   'tab', 'section', 'label', 'control', 'selector', 'expected', 'actual', 'boundary',
   'withinViewport', 'elementWidth', 'elementHeight', 'clipContainerWidth', 'cutPx',
   'viewportWidth', 'viewportHeight', 'x', 'y', 'width', 'height', 'right', 'bottom',
+  'ratio', 'ratioMin', 'ratioMax', 'pixelRatio', 'threshold', 'foreground', 'background', 'method', 'verdict', 'kind',
 ]);
 
 // Secrets are an explicit input: the sanitizer never reads or mutates environment/state.
