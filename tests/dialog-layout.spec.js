@@ -1,5 +1,5 @@
 const { test, expect, devices } = require('@playwright/test');
-const { gotoApp } = require('./support/navigation');
+const { gotoApp, clickAndAwaitApi } = require('./support/navigation');
 const { asRole } = require('./support/roles');
 
 const sizes = [{ width: 1366, height: 786 }, { width: 1920, height: 1024 }];
@@ -335,8 +335,12 @@ test.describe('Client admin dialog borders', () => {
     const initialViewport = page.viewportSize();
     const dialog = page.getByRole('dialog', { name: 'Invite Tenant User', exact: true });
     try {
-      await navigation.getByRole('button', { name: 'Inspect Users', exact: true }).click();
-      await expect(page.getByRole('button', { name: 'Invite Team Leader', exact: true })).toBeVisible();
+      await clickAndAwaitApi(page, {
+        action: () => navigation.getByRole('button', { name: 'Inspect Users', exact: true }).click(),
+        path: '/v1/users', ready: page.getByRole('button', { name: 'Invite Team Leader', exact: true }),
+        label: 'Inspect Users',
+      });
+      await expect(page).toHaveURL(/[?&]tab=user-details(?:&|$)/);
       for (const viewport of sizes) {
         await page.setViewportSize(viewport);
         expect(page.viewportSize()).toEqual(viewport);

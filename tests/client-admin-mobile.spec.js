@@ -1,5 +1,5 @@
 const { test, expect, devices } = require('@playwright/test');
-const { gotoApp } = require('./support/navigation');
+const { gotoApp, clickAndAwaitApi } = require('./support/navigation');
 const { asRole } = require('./support/roles');
 const { expectDialogLayout } = require('./support/layout');
 
@@ -208,8 +208,12 @@ test.describe('Client Admin on mobile Chromium', () => {
       contentType: 'image/png',
     });
     try {
-      await navigation.getByRole('button', { name: 'Inspect Users', exact: true }).click();
-      await expect(page.getByRole('button', { name: 'Invite Team Leader', exact: true })).toBeVisible();
+      await clickAndAwaitApi(page, {
+        action: () => navigation.getByRole('button', { name: 'Inspect Users', exact: true }).click(),
+        path: '/v1/users', ready: page.getByRole('button', { name: 'Invite Team Leader', exact: true }),
+        label: 'Inspect Users',
+      });
+      await expect(page).toHaveURL(/[?&]tab=user-details(?:&|$)/);
       // Read-only discovery found only Invite Team Leader; discover again to include future invite entry points.
       const invitations = page.getByRole('button', { name: /^Invite\b/ });
       const names = [];
