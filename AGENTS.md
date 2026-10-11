@@ -30,6 +30,11 @@ corrected expected behavior; if the defect is present the test fails, and that f
 
 ## Tests
 
+- Maintain `tests/fixtures/known-issues.json` with exact spec titles and lead-reviewed failure signatures.
+- Record `reviewedBy` and `reviewedOn`; only reviewed product defects or unclear requirements belong there.
+- Re-review signature mismatches and unexpected passes before updating or removing entries.
+- Never broaden signatures to hide new failures; environment failures take precedence.
+
 - Tag tests that need no session with `{ tag: '@public' }`; the `public` project runs them without login setup.
 - Failed/timed-out test evidence is preserved in `Sentis-evidence` beside the main repo (override with `SENTIS_EVIDENCE_DIR`), one new timestamped folder per failure under its Jira ID. What is kept follows "Evidence and screenshot privacy" below; the per-test strategy is in `docs/automation/evidence-strategy.md`.
 - Mobile tests use Chromium device emulation and do not represent iOS Safari. Opt-in `public-webkit` runs only with `SENTIS_WEBKIT=1`. WebKit emulation is closer to Safari's engine but is still not a real iPhone. Authenticated projects do not use WebKit yet.
