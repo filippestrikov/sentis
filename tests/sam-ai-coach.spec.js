@@ -26,6 +26,7 @@ test.describe('SAM AI Coach on mobile Chromium', () => {
         viewportWidth: viewport.width, viewportHeight: viewport.height, expected: true, actual });
       expect.soft(actual, `${control}: fully inside mobile viewport`).toBe(true);
     };
+    let failed = false;
     try {
       await gotoApp(page, '/');
       await expect(open).toBeVisible();
@@ -51,9 +52,7 @@ test.describe('SAM AI Coach on mobile Chromium', () => {
       await expect(open).toBeVisible();
       expect(nonGet.length, 'No non-GET requests through closing the coach').toBe(0);
     } catch (error) {
-      await testInfo.attach('evidence: coach controls', { body: JSON.stringify([
-        ...measurements, { label: 'iPhone 15 Pro Max', control: 'non-GET requests', expected: 0, actual: nonGet.length },
-      ]), contentType: 'application/json' });
+      failed = true;
       throw error;
     } finally {
       try {
@@ -66,7 +65,7 @@ test.describe('SAM AI Coach on mobile Chromium', () => {
         }
         await expect(dialog).toBeHidden();
         await expect(open).toBeVisible();
-        if (testInfo.errors.length) await testInfo.attach('evidence: coach controls', {
+        if (failed || testInfo.errors.length) await testInfo.attach('evidence: coach controls', {
           body: JSON.stringify([
             ...measurements, { label: 'iPhone 15 Pro Max', control: 'non-GET requests', expected: 0, actual: nonGet.length },
           ]), contentType: 'application/json',
