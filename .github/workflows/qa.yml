@@ -39,5 +39,7 @@ jobs:
       - run: npm run test:list
       - run: npm run test:contrast-math
       - run: npm run test:org-guard
+      - run: npm run test:navigation
+      - run: npm run test:execution-summary
       - run: npm run security:evidence-check
       - run: npm run security:leak-check
