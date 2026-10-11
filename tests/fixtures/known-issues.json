@@ -1,0 +1,90 @@
+[
+  {
+    "jira": "SNTS-138",
+    "test": "SNTS-138: selecting Custom opens a date picker",
+    "classification": "product-defect",
+    "signatures": ["Selecting Custom must display a calendar/date picker"],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  },
+  {
+    "jira": "SNTS-140",
+    "test": "SNTS-140: invite dialog Close avoids the subheading on desktop and mobile",
+    "classification": "product-defect",
+    "signatures": ["SNTS-140 (desktop 1366x768|mobile 430x932): Close button does not overlap (subheading|heading)"],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  },
+  {
+    "jira": "SNTS-156",
+    "test": "SNTS-156: Super Admin login popup fits and is aligned on mobile",
+    "classification": "product-defect",
+    "signatures": ["The Close button must not overlap the Super Admin heading"],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  },
+  {
+    "jira": "SNTS-161",
+    "test": "SNTS-161: sidebar Close button has enough contrast in dark theme",
+    "classification": "product-defect",
+    "signatures": ["^ratioMin=[\\d.]+; ratioMax=[\\d.]+; pixelRatio=[\\d.]+; threshold=3$"],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  },
+  {
+    "jira": "SNTS-176",
+    "test": "SNTS-176: the custom date range calendar fits inside the mobile viewport",
+    "classification": "product-defect",
+    "signatures": ["The complete custom date range calendar lies inside the mobile viewport"],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  },
+  {
+    "jira": "SNTS-183",
+    "test": "SNTS-183: user invitation dialog fits on mobile with every control reachable",
+    "classification": "product-defect",
+    "signatures": ["Invite Tenant User: Close button does not overlap heading"],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  },
+  {
+    "jira": "SNTS-204",
+    "test": "SNTS-204: SAM AI sections fit the mobile screen without horizontal overflow",
+    "classification": "product-defect",
+    "signatures": ["(SAM AI|Manage): horizontal overflow in sections"],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  },
+  {
+    "jira": "SNTS-205",
+    "test": "SNTS-205: new training module dialog fits on mobile without overlapping controls",
+    "classification": "product-defect",
+    "signatures": ["SNTS-205 mobile training dialog: Close button does not overlap heading"],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  },
+  {
+    "jira": "SNTS-209",
+    "test": "SNTS-209: edit training module dialog fits on mobile without overlapping controls",
+    "classification": "product-defect",
+    "signatures": ["SNTS-209 mobile training dialog: Close button does not overlap heading"],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  },
+  {
+    "jira": "SNTS-265",
+    "test": "SNTS-265: switching organizations keeps SAM AI stable",
+    "classification": "product-defect",
+    "signatures": ["Organizations whose SAM AI view crashed after switching"],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  },
+  {
+    "jira": "SNTS-242",
+    "test": "SNTS-242: development guide modal is titled Pre-start Development Guide",
+    "classification": "requirement-unclear",
+    "signatures": ["Expected string: \"Pre-start Development Guide\""],
+    "reviewedBy": "claude",
+    "reviewedOn": "2026-10-11"
+  }
+]
