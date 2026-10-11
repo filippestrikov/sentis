@@ -72,6 +72,8 @@ test.describe('Super Admin dashboard', () => {
   });
 
   test('SNTS-221: the Overall Rating Observation icon renders correctly', async ({ page }, testInfo) => {
+    let evidenceIcons;
+    let evidenceOrganization = 'Example Customer Org';
     await gotoApp(page, '/?admin=super');
     await expect(page.getByRole('heading', {
       name: 'Sentis Super Admin Dashboard', exact: true,
@@ -105,6 +107,7 @@ test.describe('Super Admin dashboard', () => {
           return { visible, width: rect.width, height: rect.height };
         });
       }));
+      evidenceIcons = overallIcons;
 
       let currentOrganization = 'Example Customer Org';
       let hasObservations = false;
@@ -118,6 +121,7 @@ test.describe('Super Admin dashboard', () => {
           name: 'Overall Rating for Effectiveness', exact: true,
         })).toBeVisible();
         currentOrganization = organization;
+        evidenceOrganization = organization;
         if (await legends.count()) {
           hasObservations = true;
           break;
@@ -135,6 +139,18 @@ test.describe('Super Admin dashboard', () => {
         body: await page.getByRole('tabpanel').screenshot(), contentType: 'image/png',
       });
     } catch (error) {
+      try {
+        const icons = evidenceIcons ? await evidenceIcons() : [];
+        const icon = icons[0];
+        await testInfo.attach('evidence: observation icon', {
+          body: JSON.stringify({
+            section: 'Overall Rating for Effectiveness', label: evidenceOrganization,
+            control: 'Observation legend icon', expected: 'visible, non-zero size',
+            actual: icon ? (icon.visible ? 'visible' : 'hidden') : 'missing',
+            ...(icon ? { width: icon.width, height: icon.height } : {}),
+          }), contentType: 'application/json',
+        });
+      } catch { /* Evidence must not mask the original failure. */ }
       await testInfo.attach('Observation diagram before context restoration', {
         body: await maskedScreenshot(page), contentType: 'image/png',
       });
