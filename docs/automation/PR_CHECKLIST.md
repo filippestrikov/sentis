@@ -80,13 +80,15 @@ The workflow in `.github/workflows/qa.yml` is credential-free and has no staging
 references, environment configuration or artifact uploads. Pull requests, pushes to `main` and manual dispatch
 run only `validate`; manual dispatch has no inputs. Authenticated staging regression runs locally.
 
+The CI PR now targets `claude/sentis-batch6`, the first branch containing every script the workflow runs.
+
 - Actions are pinned to full commit SHAs:
   - `actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1` (v7.0.1), with `persist-credentials: false`.
   - `actions/setup-node@820762786026740c76f36085b0efc47a31fe5020` (v7.0.0), with Node 22 and npm caching.
 - Top-level permissions are `contents: read`. The validate job explicitly empties the four `SENTIS_*`
   credential variables, has a 20-minute timeout, and cancels earlier validation runs for the same Git ref.
 - Validation runs `npm ci`, installs Chromium with dependencies, checks all tracked JavaScript with
-  `node --check`, then runs `test:list`, `test:contrast-math`, `security:evidence-check` and `security:leak-check`.
+  `node --check`, then runs `test:list`, `test:contrast-math`, `test:org-guard`, `security:evidence-check` and `security:leak-check`.
 - The leak-check loads the public staging sign-in page using synthetic `example.invalid` credentials;
   it needs network access but no real credentials. Listing tests does not run staging regression.
 - Adding a staging job later requires a protected environment with required reviewers and a lead security
