@@ -34,6 +34,7 @@ module.exports = defineConfig({
     ['html', { open: 'never' }],
     ['./tests/support/evidence-reporter.js'],
     ...(process.env.CI ? [['junit', { outputFile: 'test-results/junit.xml' }]] : []),
+    ['./tests/support/summary-reporter.js'],
   ],
   use: {
     baseURL: 'https://sam.sentis.com/',
