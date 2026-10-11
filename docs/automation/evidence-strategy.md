@@ -24,6 +24,11 @@ counts. Failures are written to `Sentis-evidence/<UTC date>/<Jira ID>/<time>-<pr
 | SNTS-182 tab switch scroll position | chromium (iPhone) | Client admin content (not reviewed) | Summary only | Withheld |
 | SNTS-242 development guide title | chromium | Pre-start observation form, guide dialog | Reviewed screenshot | Reviewed: form and guide, no people |
 | SNTS-167 guide header on mobile | chromium (iPhone) | Same page as SNTS-242 | Reviewed screenshot | Reviewed with SNTS-242 |
+| SNTS-94 Terms Close clear of content, mobile and tablet | public (four Chromium devices) | Public Terms dialog | `close-overlap.json`: clipped text and control geometry; summary | No explicit captures; public failure screenshots/trace allowed |
+| SNTS-117 public popup borders, both desktop sizes | public | Public Terms and Super Admin sign-in dialogs | `border-crossings.json`: visible border segment geometry; summary | Public automatic failure screenshots/trace allowed |
+| SNTS-117 Invite Tenant User popup borders | chromium | Users table behind the dialog | `border-crossings.json`: control containment and border geometry; summary | None; no screenshots or traces |
+| SNTS-117 New Training Module popup borders | chromium | Training list and empty module dialog | `border-crossings.json`: control containment and border geometry; summary | None; no screenshots or traces |
+| SNTS-251 SAM AI Coach close and draft input on mobile | chromium (iPhone) | Coach may show conversation history | `coach-controls.json`: viewport/control geometry and non-GET request count; summary | None; no screenshots or traces |
 
 Avatar initials in the header (for example "SA", "AM") are visible in reviewed captures. They were judged
 non-identifying.
