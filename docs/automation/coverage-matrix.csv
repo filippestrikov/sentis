@@ -26,7 +26,7 @@ SNTS-151,High,Account / Security,A,blocked,disposable-user,yes,,,not-run,,,,,Cha
 SNTS-156,Low,Super Admin Login / Mobile,C,pilot,anonymous,no,tests/super-admin-login.spec.js,SNTS-156: Super Admin login popup fits and is aligned on mobile,failed-defect,approved,3c312fb,"E:/Codex/Sentis-evidence/2026-10-10/SNTS-156 (screenshot, trace.zip, html report)",codex,"2026-10-10: product defect reproduced; Close button overlaps and clips the heading at 430px (Chromium iPhone 15 Pro Max emulation, not Safari on iOS). Viewport and control containment checks pass. Lead re-ran it twice with the same single failing assertion"
 SNTS-157,Medium,Homepage / Pre-start Rating,A,blocked,user-without-reservation,no,,,not-run,,,,,Needs an account with no pre-start reservation
 SNTS-159,Medium,Homepage / Pre-start Rating,A,blocked,tbd,yes,,,not-run,,,,,Needs a rated reservation; changes rating
-SNTS-161,Medium,Homepage / Sidebar / Mobile,D,ready,client-admin,no,,,not-run,,,,,Mobile dark theme; contrast via computed colors
+SNTS-161,Medium,Homepage / Sidebar / Mobile,D,ready,client-admin,no,tests/theme-contrast.spec.js,SNTS-161: sidebar Close button has enough contrast in dark theme,failed-defect,pending,,pending lead run,codex,Assumption: WCAG 2.2 1.4.11 requires 3:1 non-text contrast for the Close icon. Dark: computed 1.13–1.17 and pixel 1.17; product defect. Chromium device emulation does not represent iOS Safari.
 SNTS-163,Low,Safety Share / Mobile,C,needs-clarification,tbd,no,,,not-run,,,,,Role for Safety Share not stated; clipping measurable
 SNTS-164,Medium,Safety Share / Mobile,C,manual-only,tbd,no,,,not-run,,,,,Real-device fullscreen only
 SNTS-165,Low,Safety Share / Mobile,D,manual-only,tbd,no,,,not-run,,,,,Visual artifact; no baseline
