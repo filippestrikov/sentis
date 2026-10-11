@@ -18,10 +18,14 @@ corrected expected behavior; if the defect is present the test fails, and that f
 
 - `docs/automation/backlog-inventory.json`: one entry per analyzed SNTS issue (classification A–G, decision, blockers).
 - `docs/automation/coverage-matrix.csv`: Jira ID, area, classification, decision, test file,
-  test ID, execution status, review status, commit, evidence, notes, owner.
+  test ID, execution status, review status, commit, evidence, notes, owner, coverage scope.
+- Coverage scope (automated rows): `full`, `emulation-only` (Chromium device emulation, not a real device),
+  `desktop+emulation`, `provisional` (the test may not match the reported behavior; see notes), or a
+  combination such as `provisional; emulation-only`. Never record real-device coverage from emulation.
 - `docs/automation/requirements-gaps.md`: open questions for the QA owner.
 - Work only on rows whose `owner` is you. Edit only your own rows so branches merge cleanly.
-- Execution status values: `not-run`, `passed`, `failed-defect`, `failed-test`, `blocked`, `skipped`.
+- Execution status values: `not-run`, `passed`, `failed-defect`, `failed-unclear` (requirement unresolved),
+  `failed-test`, `blocked`, `skipped`.
   Never record `passed` without a run.
 
 ## Tests
