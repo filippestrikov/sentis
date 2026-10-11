@@ -44,7 +44,9 @@ test.describe('Theme contrast on mobile Chromium', () => {
 
       const kind = 'non-text';
       const result = await measureContrast(close, { kind });
-      const { threshold, foreground, background, ratioMin, ratioMax, pixelRatio, verdict, method } = result;
+      const { threshold, foreground, background, verdict, method } = result;
+      const [ratioMin, ratioMax, pixelRatio] = [result.ratioMin, result.ratioMax, result.pixelRatio]
+        .map(value => value === null ? null : Number(value.toFixed(2)));
       const evidence = { control: 'Close', kind, threshold, foreground, background,
         ratioMin, ratioMax, pixelRatio, verdict, method };
       const reason = verdict === 'inconclusive' ? result.reasons[0] : undefined;
