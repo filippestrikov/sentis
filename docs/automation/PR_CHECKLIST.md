@@ -74,29 +74,20 @@ Use a merge commit or a rebase merge, not squash. Squashing PR 1 rewrites histor
       comments.
 - [ ] After merge, delete the merged head branch only after the next PR has been retargeted.
 
-## CI requirements (workflow exists; staging is manual-only)
+## CI requirements (credential-free validation only)
 
-The workflow exists in `.github/workflows/qa.yml`, and its staging job is manual-only. It must:
+The workflow in `.github/workflows/qa.yml` is credential-free and has no staging job, credential secret
+references, environment configuration or artifact uploads. Pull requests, pushes to `main` and manual dispatch
+run only `validate`; manual dispatch has no inputs. Authenticated staging regression runs locally.
 
-- Actions are pinned by major version; pinning to commit SHAs is recommended before enabling unattended runs.
-- The validate job's leak-check loads the public staging sign-in page with synthetic `example.invalid` credentials
-  (network access, no secrets). Configure the `staging-qa` environment with required reviewers and the four
-  `SENTIS_*` secrets before the first manual run.
-
-1. **Secrets:** read `SENTIS_*` credentials from repository secrets only, never from files. Use separate
-   least-privilege QA accounts where possible. Never echo the environment.
-2. **Run order:** `npm ci`, then `node --check` on all JS, then `npm run test:list`, then
-   `npm run security:leak-check`, then `npm run security:evidence-check`, then `npm run test:contrast-math`, then
-   the suite with `CI=1`.
-   - `CI=1` gives 1 worker, which also keeps shared-account tests (SNTS-203 and 265) serial.
-3. **Classify, don't hide:** known product defects fail the suite. CI must report the failures against the
-   coverage-matrix status rather than mark the job green by skipping. Option: a separate required job for `@public`
-   plus the security checks, and an informational job for the signed-in suite.
-4. **Artifacts:**
-   - Never upload `playwright-report/`, `test-results/`, traces or screenshots from signed-in runs.
-   - Upload only the evidence reporter's sanitized `summary.json` and allowlisted `evidence:` JSON, after
-     `check-artifact-leaks.js` passes on them.
-   - Public-project artifacts may be uploaded.
-5. **Retries:** CI retries (2) can hide flakiness. Report flaky results as `flaky`, never as passed.
-6. **No writes:** CI must not create data, send invitations or change shared-account settings beyond the asserted
-   restores in the tests.
+- Actions are pinned to full commit SHAs:
+  - `actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1` (v7.0.1), with `persist-credentials: false`.
+  - `actions/setup-node@820762786026740c76f36085b0efc47a31fe5020` (v7.0.0), with Node 22 and npm caching.
+- Top-level permissions are `contents: read`. The validate job explicitly empties the four `SENTIS_*`
+  credential variables, has a 20-minute timeout, and cancels earlier validation runs for the same Git ref.
+- Validation runs `npm ci`, installs Chromium with dependencies, checks all tracked JavaScript with
+  `node --check`, then runs `test:list`, `test:contrast-math`, `security:evidence-check` and `security:leak-check`.
+- The leak-check loads the public staging sign-in page using synthetic `example.invalid` credentials;
+  it needs network access but no real credentials. Listing tests does not run staging regression.
+- Adding a staging job later requires a protected environment with required reviewers and a lead security
+  review before authenticated runs can be enabled. See `docs/automation/CI_REVIEW.md`.
