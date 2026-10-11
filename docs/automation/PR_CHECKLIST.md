@@ -74,9 +74,9 @@ Use a merge commit or a rebase merge, not squash. Squashing PR 1 rewrites histor
       comments.
 - [ ] After merge, delete the merged head branch only after the next PR has been retargeted.
 
-## CI requirements (proposal; no workflow exists yet)
+## CI requirements (workflow exists; staging is manual-only)
 
-A workflow is not part of Batch 5 unless approved. If one is added, it must:
+The workflow exists in `.github/workflows/qa.yml`, and its staging job is manual-only. It must:
 
 1. **Secrets:** read `SENTIS_*` credentials from repository secrets only, never from files. Use separate
    least-privilege QA accounts where possible. Never echo the environment.

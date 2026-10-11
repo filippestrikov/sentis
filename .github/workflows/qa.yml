@@ -1,0 +1,98 @@
+# Validate without secrets; staging regression is manual and gated by the staging-qa environment.
+name: Sentis QA
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_staging:
+        description: Run authenticated staging regression
+        type: boolean
+        default: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      CI: '1'
+      SENTIS_SUPER_ADMIN_EMAIL: ''
+      SENTIS_SUPER_ADMIN_PASSWORD: ''
+      SENTIS_CLIENT_ADMIN_EMAIL: ''
+      SENTIS_CLIENT_ADMIN_PASSWORD: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Check JavaScript syntax
+        run: git ls-files '*.js' | xargs -r -n1 node --check
+      - run: npm run test:list
+      - run: npm run test:contrast-math
+      - run: npm run security:evidence-check
+      - run: npm run security:leak-check
+
+  staging:
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && inputs.run_staging == true
+    runs-on: ubuntu-latest
+    environment: staging-qa
+    concurrency:
+      group: sentis-shared-staging-accounts
+      cancel-in-progress: false
+    env:
+      CI: '1'
+      SENTIS_AGENT: ci
+      SENTIS_EVIDENCE_DIR: ci-evidence
+      SENTIS_SUPER_ADMIN_EMAIL: ${{ secrets.SENTIS_SUPER_ADMIN_EMAIL }}
+      SENTIS_SUPER_ADMIN_PASSWORD: ${{ secrets.SENTIS_SUPER_ADMIN_PASSWORD }}
+      SENTIS_CLIENT_ADMIN_EMAIL: ${{ secrets.SENTIS_CLIENT_ADMIN_EMAIL }}
+      SENTIS_CLIENT_ADMIN_PASSWORD: ${{ secrets.SENTIS_CLIENT_ADMIN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Run staging regression
+        run: npx playwright test --workers=1
+      - name: Scan artifacts for credential leaks
+        id: leak_scan
+        if: always()
+        run: node scripts/check-artifact-leaks.js
+      - name: Summarize test counts
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+
+          counts = ET.parse('test-results/junit.xml').getroot().attrib
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              for key in ('tests', 'failures', 'errors', 'skipped'):
+                  summary.write(f'{key}: {int(counts[key])}\n')
+          PY
+      - name: Upload sanitized JSON evidence
+        if: always() && steps.leak_scan.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-evidence
+          path: ci-evidence/**/*.json
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Remove sessions and reports
+        if: always()
+        run: rm -rf -- .auth/ test-results/ playwright-report/
