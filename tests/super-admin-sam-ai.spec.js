@@ -1,6 +1,7 @@
 const { test, expect, devices } = require('@playwright/test');
 const { gotoApp } = require('./support/navigation');
 const { asRole } = require('./support/roles');
+const { restoreOrganization } = require('./support/organization');
 const { knownOrganization, aiDataOrganization } = require('./fixtures/super-admin.json');
 
 const exactText = text => new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
@@ -8,12 +9,13 @@ const exactText = text => new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\
 test.describe('Super Admin SAM AI', () => {
   asRole(test, 'super-admin');
 
-  test('SNTS-265: switching organizations keeps SAM AI stable', async ({ page }, testInfo) => {
+  test('SNTS-265: switching organizations keeps SAM AI stable', { tag: '@shared-account' }, async ({ page }, testInfo) => {
     test.setTimeout(240000); // visits every organization; each switch reloads dashboard data
     const pageErrors = [];
     page.on('pageerror', error => pageErrors.push(error.message));
     let organizationSelector;
     let initialOrganization;
+    let organizationSwitchAttempted = false;
 
     try {
       await gotoApp(page, '/?admin=super');
@@ -86,6 +88,7 @@ test.describe('Super Admin SAM AI', () => {
         // after that data arrives. Observe (never mock) the organization's report responses, then let React render.
         const reports = ['ai-report', 'prestart-report', 'risk-assessment-report'].map(report => page.waitForResponse(
           response => new RegExp(`/v1/reporting/organizations/[^/]+/${report}`).test(response.url()), { timeout: 30000 }));
+        organizationSwitchAttempted = true;
         await listbox.getByRole('option', { name: organization, exact: true }).click();
         await expect(listbox).toBeHidden();
         await Promise.all(reports);
@@ -118,19 +121,25 @@ test.describe('Super Admin SAM AI', () => {
     } finally {
       // The super-admin account is shared, so leave its selected organization as we found it.
       // Selection is not persisted (verified 2026-10-10), so a reload restores the default when the app crashed.
-      if (initialOrganization) {
-        const crashed = await page.getByRole('heading', { name: 'Oops! Something went wrong', exact: true }).isVisible();
-        const current = crashed ? null : await page.getByRole('combobox').first().textContent();
-        if (crashed || current !== initialOrganization) {
-          if (crashed) {
-            await gotoApp(page, '/?admin=super&tab=cortex');
-          } else {
-            await page.getByRole('combobox').filter({ hasText: exactText(current) }).click();
-            await page.getByRole('listbox').getByRole('option', { name: initialOrganization, exact: true }).click();
-          }
-        }
-        await expect.soft(page.getByRole('combobox').filter({ hasText: exactText(initialOrganization) }),
-          'Initial organization is restored').toHaveCount(1, { timeout: 20000 });
+      if (organizationSwitchAttempted) {
+        await restoreOrganization({
+          role: 'super-admin', testInfo, expected: initialOrganization,
+          restore: async () => {
+            const crashed = await page.getByRole('heading', { name: 'Oops! Something went wrong', exact: true }).isVisible();
+            const current = crashed ? null : await page.getByRole('combobox').first().textContent();
+            if (crashed || current !== initialOrganization) {
+              if (crashed) {
+                await gotoApp(page, '/?admin=super&tab=cortex');
+              } else {
+                await page.getByRole('combobox').filter({ hasText: exactText(current) }).click();
+                await page.getByRole('listbox').getByRole('option', { name: initialOrganization, exact: true }).click();
+              }
+            }
+            await expect(page.getByRole('combobox').filter({ hasText: exactText(initialOrganization) }),
+              'Initial organization is restored').toHaveCount(1, { timeout: 20000 });
+          },
+          current: () => page.getByRole('combobox').first().textContent(),
+        });
       }
       expect.soft(pageErrors, `SAM AI page errors: ${pageErrors.join('\n') || 'none'}`).toEqual([]);
     }
@@ -196,9 +205,10 @@ test.describe('Super Admin sections on mobile Chromium', () => {
   test.use(iPhone);
   asRole(test, 'super-admin');
 
-  test('SNTS-204: SAM AI sections fit the mobile screen without horizontal overflow', async ({ page }, testInfo) => {
+  test('SNTS-204: SAM AI sections fit the mobile screen without horizontal overflow', { tag: '@shared-account' }, async ({ page }, testInfo) => {
     test.setTimeout(180000); // Eight sections load shared staging dashboard data sequentially.
     let initialOrganization;
+    let organizationSwitchAttempted = false;
     let currentTab = 'SAM AI';
     const attachGeometry = async (tab, overflow) => {
       try {
@@ -243,6 +253,7 @@ test.describe('Super Admin sections on mobile Chromium', () => {
       await expect(listbox).toBeVisible();
       const target = listbox.getByRole('option', { name: aiDataOrganization, exact: true });
       test.skip(!(await target.count()), 'Missing aiDataOrganization fixture in tests/fixtures/super-admin.json');
+      organizationSwitchAttempted = aiDataOrganization !== initialOrganization;
       await target.click();
       await expect(listbox).toBeHidden();
       await expect(page.getByRole('combobox').filter({ hasText: exactText(aiDataOrganization) })).toHaveCount(1);
@@ -288,16 +299,22 @@ test.describe('Super Admin sections on mobile Chromium', () => {
       throw error;
     } finally {
       try {
-        if (initialOrganization) {
-          const listbox = page.getByRole('listbox');
-          if (await listbox.isVisible()) await page.keyboard.press('Escape');
-          await expect(listbox).toBeHidden();
-          await gotoApp(page, '/?admin=super');
-          await expect(page).toHaveURL(/\?admin=super$/);
-          await expect(page.getByRole('combobox').filter({ hasText: exactText(initialOrganization) }),
-            'Sentis Super Admin Dashboard: initial organization restored').toHaveCount(1, { timeout: 20000 });
-          await expect(page.getByRole('combobox').filter({ hasText: exactText(knownOrganization) }),
-            'Sentis Super Admin Dashboard: knownOrganization restored').toHaveCount(1);
+        if (organizationSwitchAttempted) {
+          await restoreOrganization({
+            role: 'super-admin', testInfo, expected: initialOrganization,
+            restore: async () => {
+              const listbox = page.getByRole('listbox');
+              if (await listbox.isVisible()) await page.keyboard.press('Escape');
+              await expect(listbox).toBeHidden();
+              await gotoApp(page, '/?admin=super');
+              await expect(page).toHaveURL(/\?admin=super$/);
+              await expect(page.getByRole('combobox').filter({ hasText: exactText(initialOrganization) }),
+                'Sentis Super Admin Dashboard: initial organization restored').toHaveCount(1, { timeout: 20000 });
+              await expect(page.getByRole('combobox').filter({ hasText: exactText(knownOrganization) }),
+                'Sentis Super Admin Dashboard: knownOrganization restored').toHaveCount(1);
+            },
+            current: () => page.getByRole('combobox').first().textContent(),
+          });
         }
       } finally {
         // Restoration is asserted above; clear the page before the automatic snapshot can retain user lists.

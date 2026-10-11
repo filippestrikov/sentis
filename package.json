@@ -9,6 +9,7 @@
     "test:list": "playwright test --list",
     "test:report": "playwright show-report",
     "test:contrast-math": "node scripts/contrast-selftest.js",
+    "test:org-guard": "node scripts/org-guard-selftest.js",
     "security:leak-check": "node scripts/leak-regression.js",
     "security:evidence-check": "node scripts/evidence-privacy-regression.js"
   },
