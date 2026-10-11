@@ -8,6 +8,7 @@
     "test:ui": "playwright test --ui",
     "test:list": "playwright test --list",
     "test:report": "playwright show-report",
+    "test:contrast-math": "node scripts/contrast-selftest.js",
     "security:leak-check": "node scripts/leak-regression.js",
     "security:evidence-check": "node scripts/evidence-privacy-regression.js"
   },
