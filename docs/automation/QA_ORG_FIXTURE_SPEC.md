@@ -1,7 +1,20 @@
 # Dedicated QA organization: fixture-data specification
 
-**Status:** a request to the QA owner or data owner. Agents do not create organizations, accounts or observations,
-and do not modify existing staging records. The automation only reads this data.
+**Status: final specification, v1.0 (2026-10-11).** Creating the organization and seeding data are **not yet
+authorized**. SNTS-180 and SNTS-136 stay **Blocked** until the QA owner approves creation and the verification in §6
+passes. Agents do not create organizations, accounts or observations, and do not modify existing staging records. The
+automation only reads this data.
+
+**Summary of what is needed**
+
+- 1 organization: `QA-Automation`.
+- 1 QA client-admin account.
+- At least 25 synthetic observations:
+  - at least 21 inside a 12-month window, so 3 pages at the page size of 10;
+  - at least 2 inside the last 7 days, refreshed;
+  - at least 1 submitted by the QA client admin.
+- All free text uses the `QA … NN` placeholders.
+- Clean-up deletes the organization, or only the tagged records.
 
 ## 1. Organization
 
@@ -109,9 +122,19 @@ date filters very likely use the **meeting date** (`meetingDate`), not the submi
    submit them through New Observation, which sets `submittedAt` to now and the meeting date as entered.
 4. Tag every free-text field `QA fixture NN`, so the records are identifiable and safe to delete.
 
-**Clean-up:** delete the QA organization, which removes its observations and accounts, or delete the records whose
-location is `QA Site NN` or whose comment is `QA fixture NN`. Never delete by date or by organization name pattern
-alone.
+**Controlled clean-up** (data owner, with the QA owner's approval):
+
+1. **Inventory first.** Count the records to be removed, selected by `QA Site NN` location and `QA fixture NN`
+   comment within the `QA-Automation` organization. The count must match the seed log (number seeded, plus any
+   weekly refreshes).
+2. **Dry run.** The seed or cleanup script prints the IDs and counts only, and deletes nothing.
+3. **Delete** either the whole `QA-Automation` organization (observations and accounts with it) or exactly the
+   inventoried IDs. Never delete by date, by rating, or by an organization-name pattern alone. Never touch records
+   outside `QA-Automation`.
+4. **Verify.** The count is zero, other organizations' counts are unchanged, and the QA client-admin account is
+   removed or disabled.
+5. **Record** who, when, what and the counts in the seed log. Tell the lead first, so SNTS-180, SNTS-136 and the
+   SNTS-117 fixture are set back to `blocked` rather than failing.
 
 ## 6. Verification once seeded (lead, read-only)
 
