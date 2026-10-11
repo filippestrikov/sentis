@@ -1,5 +1,23 @@
 # CI workflow security review and `staging-qa` environment status (2026-10-11)
 
+> **Decision (QA owner, Batch 6): Option D.** GitHub Actions is credential-free. Authenticated staging regression runs
+> locally only. On `codex/ci-workflow` (476f693, local), the staging job, the `run_staging` input, every `secrets.*`
+> reference, the `environment:` and the artifact upload are **removed**, so the staging job cannot run even
+> manually.
+>
+> - Actions are pinned to full commit SHAs, verified against the upstream repositories with `git ls-remote`. Each
+>   pinned `action.yml` declares `runs.using: node24`:
+>   - `actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1`, v7.0.1, July 2026.
+>   - `actions/setup-node@820762786026740c76f36085b0efc47a31fe5020`, v7.0.0, July 2026. v7.1.0 was skipped because
+>     it was only 3 days old.
+> - Validated in a clean clone (no `.env`, no `.auth`, all `SENTIS_*` empty, `CI=1`):
+>   - `npm ci` and `node --check` on 27 files;
+>   - `test:list` (24 tests) and `test:contrast-math` 15/15;
+>   - `security:evidence-check` 7/7 and `security:leak-check` (0 hits).
+> - YAML parsed: one job (`validate`), `permissions: contents: read`, a per-ref concurrency group with cancel, and a
+>   20-minute timeout.
+> - The sections below describe the earlier two-job design and are kept for the record.
+
 Workflow: `.github/workflows/qa.yml` on `codex/ci-workflow` (7be449c, pushed). Reviewer: Claude. The workflow has not
 run on GitHub yet: no PR exists, and pushing a non-`main` branch does not trigger it.
 
