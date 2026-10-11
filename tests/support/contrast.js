@@ -45,6 +45,7 @@ async function measureContrast(locator, { kind } = {}) {
   if (!Object.prototype.hasOwnProperty.call(thresholds, kind)) throw new TypeError('Unsupported contrast kind');
   const threshold = thresholds[kind];
   const computed = await locator.evaluate(element => {
+    if (element.nodeType === Node.TEXT_NODE) element = element.parentElement;
     const reasons = [];
     let reliable = true;
     const unsupported = reason => {
@@ -106,9 +107,24 @@ async function measureContrast(locator, { kind } = {}) {
       return stops;
     };
     const svg = element.matches('svg') ? element : element.querySelector('svg');
+    const svgText = element.namespaceURI === 'http://www.w3.org/2000/svg'
+      && ['text', 'tspan', 'textPath'].includes(element.localName);
     let paint = element;
     let foreground;
-    if (svg) {
+    if (svgText) {
+      const style = getComputedStyle(element);
+      const strokePainted = style.fill === 'none' && style.stroke !== 'none';
+      const value = strokePainted ? style.stroke : style.fill;
+      if (strokePainted) reasons.push('stroke-painted text');
+      if (/url\(/i.test(value)) {
+        unsupported('SVG paint server');
+        foreground = [0, 0, 0, 0];
+      } else {
+        foreground = value === 'none' ? [0, 0, 0, 0]
+          : colour(/^currentcolor$/i.test(value) ? style.color : value);
+        foreground[3] *= Number(strokePainted ? style.strokeOpacity : style.fillOpacity);
+      }
+    } else if (svg) {
       const candidates = [svg, ...svg.querySelectorAll('path, circle, rect, line, polyline, polygon, ellipse, text, use')];
       const stroke = candidates.find(node => {
         const style = getComputedStyle(node);
@@ -127,6 +143,30 @@ async function measureContrast(locator, { kind } = {}) {
     if (foreground[3] === 0) unsupported('transparent foreground');
     const rect = element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) unsupported('zero size');
+    if (svgText) {
+      const containingSvg = element.closest('svg');
+      const shapes = containingSvg?.querySelectorAll('path, circle, rect, line, polyline, polygon, ellipse, use') || [];
+      for (const shape of shapes) {
+        // Definition shapes do not paint until referenced by a rendered element.
+        if (shape.closest('defs, clipPath, mask, pattern, marker, symbol')) continue;
+        const box = shape.getBoundingClientRect();
+        if (box.width <= 0 || box.height <= 0 || box.right <= rect.left || box.left >= rect.right
+            || box.bottom <= rect.top || box.top >= rect.bottom) continue;
+        const style = getComputedStyle(shape);
+        if (style.fill === 'none' || Number(style.fillOpacity) === 0) continue;
+        let visible = true;
+        for (let node = shape; node; node = parent(node)) {
+          const css = getComputedStyle(node);
+          if (css.display === 'none' || css.visibility !== 'visible' || Number(css.opacity) === 0) {
+            visible = false;
+            break;
+          }
+        }
+        if (!visible) continue;
+        const fill = /^currentcolor$/i.test(style.fill) ? style.color : style.fill;
+        if (/url\(/i.test(fill) || colour(fill)[3] > 0) unsupported('SVG shapes may paint behind text');
+      }
+    }
     let disabled = false;
     let opacity = 1;
     let supplier = null;
