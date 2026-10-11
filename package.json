@@ -10,6 +10,7 @@
     "test:report": "playwright show-report",
     "test:contrast-math": "node scripts/contrast-selftest.js && node scripts/contrast-dom-selftest.js",
     "test:org-guard": "node scripts/org-guard-selftest.js",
+    "test:navigation": "node scripts/navigation-selftest.js",
     "security:leak-check": "node scripts/leak-regression.js",
     "security:evidence-check": "node scripts/evidence-privacy-regression.js"
   },

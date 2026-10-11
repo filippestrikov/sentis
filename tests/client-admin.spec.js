@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { gotoApp } = require('./support/navigation');
+const { gotoApp, clickAndAwaitApi } = require('./support/navigation');
 const { asRole } = require('./support/roles');
 const { expectDialogLayout, textBox } = require('./support/layout');
 
@@ -15,8 +15,12 @@ test.describe('Client Admin invite dialog layout', () => {
     const initialViewport = page.viewportSize();
     const dialog = page.getByRole('dialog', { name: 'Invite Tenant User', exact: true });
     try {
-      await navigation.getByRole('button', { name: 'Inspect Users', exact: true }).click();
-      await expect(page.getByRole('button', { name: 'Invite Team Leader', exact: true })).toBeVisible();
+      await clickAndAwaitApi(page, {
+        action: () => navigation.getByRole('button', { name: 'Inspect Users', exact: true }).click(),
+        path: '/v1/users', ready: page.getByRole('button', { name: 'Invite Team Leader', exact: true }),
+        label: 'Inspect Users',
+      });
+      await expect(page).toHaveURL(/[?&]tab=user-details(?:&|$)/);
       for (const [label, viewport] of [
         ['SNTS-140 desktop 1366x768', initialViewport],
         ['SNTS-140 mobile 430x932', { width: 430, height: 932 }],
